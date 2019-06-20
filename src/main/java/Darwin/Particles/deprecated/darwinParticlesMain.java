@@ -1,4 +1,4 @@
-package Darwin.Particles;
+package Darwin.Particles.deprecated;
 
 import java.nio.file.Path;
 import java.sql.Connection;

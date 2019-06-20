@@ -1,4 +1,4 @@
-package Darwin.Particles;
+package Darwin.Particles.deprecated;
 
 import org.spongepowered.api.effect.particle.ParticleEffect;
 import org.spongepowered.api.effect.particle.ParticleType;

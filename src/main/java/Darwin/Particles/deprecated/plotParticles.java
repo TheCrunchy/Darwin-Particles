@@ -1,4 +1,4 @@
-package Darwin.Particles;
+package Darwin.Particles.deprecated;
 
 import java.util.ArrayList;
 import java.util.Collection;
