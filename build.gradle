@@ -1,0 +1,33 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+
+group = 'net.moddedminecraft'
+version = '2.0.3-API-7'
+
+description = """PlotIDBar"""
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+tasks.withType(JavaCompile) {
+	options.encoding = 'UTF-8'
+}
+
+repositories {
+    maven { url "https://mvnrepository.com/artifact/org.projectlombok/lombok" }
+    maven { url "http://repo.spongepowered.org/maven" }
+    maven { url "http://repo.maven.apache.org/maven2" }
+    maven { url "http://ci.athion.net/job/PlotSquared/ws/mvn/" }
+    maven { url "http://ci.athion.net/job/PlotSquared-Legacy/ws/mvn/"}
+	maven { url = "http://maven.sk89q.com/repo"	}
+	    maven { url 'https://jitpack.io' }
+} 
+dependencies {
+    compile group: 'com.zaxxer', name: 'HikariCP', version:'3.1.0'
+    compileOnly group: 'org.projectlombok', name: 'lombok', version:'1.18.0'
+    compile "org.spongepowered:spongeapi:7.1.0-SNAPSHOT"
+    compile "com.plotsquared:plotsquared-api:19.05.15-3293593-765"
+    compile 'com.github.rojo8399:PlaceholderAPI:master-SNAPSHOT'
+	compileOnly ("com.sk89q.worldedit:worldedit-core:6.1.4-SNAPSHOT") {
+        transitive = false
+    }
+}
