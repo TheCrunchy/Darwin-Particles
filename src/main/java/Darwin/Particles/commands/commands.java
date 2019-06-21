@@ -32,6 +32,7 @@ public class commands {
 		public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
 			Player player = (Player) src;
 			ParticleEffect type;
+			Long interval;
 			if (args.getOne("particle effect").isPresent()) {
 			type = getParticleFromString.get(args.getOne("particle effect").get().toString().toLowerCase(), Integer.valueOf(args.getOne("quantity").get().toString()));
 			}
@@ -46,9 +47,16 @@ public class commands {
 							.build();
 				}
 			}
+			if (args.getOne("interval").isPresent()) {
+				interval = (Long) args.getOne("interval").get();
+				}
+			else {
+				interval = (long) 5;
+			}
 			playerData pd = new playerData();
 			pd.setEffect(type);
 			pd.setQuantity(Integer.valueOf(args.getOne("quantity").get().toString()));
+			pd.setInterval(interval);
 			darwinParticlesMain.playerData.put(player.getUniqueId(), pd);
 			player.sendMessage(Text.of(darwinParticlesMain.particlesDefault, "Particle type changed to ", type.getType().getName()));
 			return CommandResult.success();

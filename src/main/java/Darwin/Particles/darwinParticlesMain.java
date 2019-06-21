@@ -65,9 +65,9 @@ public class darwinParticlesMain {
 	private ConfigurationLoader<CommentedConfigurationNode> configManager;
 	public static SqlService sql;
 
-	public static  HashMap<String, HashMap<String, plotParticles>> allPlotsWithParticles = new HashMap<>();
+	public static  HashMap<String, plotParticles> allPlotsWithParticles = new HashMap<>();
 	public static  HashMap<UUID, playerData> playerData = new HashMap<>();
-	
+
 	public static Text particlesDefault = Text.of(TextColors.LIGHT_PURPLE, "Particles - ");
 	@Listener
 	public void onServerFinishLoad(GameStartedServerEvent event) throws SQLException {
@@ -75,89 +75,25 @@ public class darwinParticlesMain {
 		staticRoots = root;
 		rootSingleton.getInstance().setRoot(staticRoots);
 		DatabaseCreation db = new DatabaseCreation(sql);
-		
+
 		//rest of this shit is fine
 		Sponge.getCommandManager().register(this, makeTest, "particleplacer", "pap");
 		Sponge.getEventManager().registerListeners(this, new doRightClick());
 		Collection<World> allWorlds = Sponge.getServer().getWorlds();
-		for (World world : allWorlds) {
-			if (world.isLoaded()) {
-				String tableName = null;
-				if (world.getName().toLowerCase().contains("plot") || world.getName().toLowerCase().contains("contest")) {
-					tableName = "Plots";
-				}
-				else {
-					tableName = "PrivateWorlds";
-				}
-				Integer iteration = 0;
-				String query = "SELECT * from " + tableName + " where worldName = '" + world.getName() + "'";
-				String uri = "jdbc:sqlite:" + root + "/ParticleStorage.db";
-				try (Connection conn2 = getDataSource(uri).getConnection()) {
-					PreparedStatement stmt = conn2.prepareStatement(query); {
-						ResultSet results = stmt.executeQuery(); {
-							while(results.next()) {
-								ArrayList<Location> locations = new ArrayList<>();
-								ArrayList<Vector3i> chunkLocations = new ArrayList<>();
-								ArrayList<ParticleEffect> effects = new ArrayList<>();
-								Long interval;
-								HashMap<String, plotParticles> globalParticles;
-					
-								String[] locSplit = results.getString("Location").split(",");
-
-								@SuppressWarnings("unchecked")
-								Location loc = new Location(world, Double.valueOf(locSplit[0]),Double.valueOf(locSplit[1]),Double.valueOf(locSplit[2]));
-								locations.add(loc);
-								com.intellectualcrafters.plot.object.Location plotLoc = new com.intellectualcrafters.plot.object.Location();
-								plotLoc.setX(loc.getBlockX());
-								plotLoc.setY(loc.getBlockY());
-								plotLoc.setZ(loc.getBlockZ());
-								plotLoc.setWorld(world.getName());
-								if (Plot.getPlot(plotLoc) != null) {
-									Plot plot = Plot.getPlot(plotLoc);
-								String[] chunkSplit = results.getString("ChunkID").replace("(", "").replace(")", "").replace("[", "").replace("]", "").replace(" ", "").split(",");
-								chunkLocations.add(new Vector3i(Integer.valueOf(chunkSplit[0]),Integer.valueOf(chunkSplit[1]),Integer.valueOf(chunkSplit[2])));
-								effects.add(getParticleFromString.get(results.getString("ParticleEffect"), results.getInt("Quantity")));
-								interval = results.getLong("Interval");
-
-								//now for the massive fucking switch statement
-								plotParticles plotParticle = null; 
-								
-								if (allPlotsWithParticles.containsKey(world.getName())) {
-									globalParticles = allPlotsWithParticles.get(world.getName());
-								}
-								else {
-									globalParticles = new HashMap<String, plotParticles>();
-									plotParticle = new plotParticles(locations, chunkLocations, effects, interval);
-								}
-								if (globalParticles.containsKey(plot.getId().toString())) {
-								plotParticle = globalParticles.get(plot.getId().toString());
-								plotParticle.addParticles(locations, chunkLocations, effects, interval);
-								}
-								else {
-									plotParticle = new plotParticles(locations, chunkLocations, effects, interval);
-								}
-								iteration += 1;
-									globalParticles.put(plot.getId().toString(),plotParticle);
-									allPlotsWithParticles.put(world.getName(), globalParticles);	
-									
-								}						
-							}
-						}
-					}
-				}
-			}
-			System.out.println(allPlotsWithParticles.entrySet());
-			Task doParticleTask = Task.builder().execute(new doParticleTask())
-					.interval(1, TimeUnit.SECONDS)
-					.name("spawnParticles").submit(this);
-		}
-
+		System.out.println(allPlotsWithParticles.entrySet());
+		Task doParticleTask = Task.builder().execute(new doParticleTask())
+				.interval(1, TimeUnit.SECONDS)
+				.name("spawnParticles").submit(this);
 	}
+
+
 
 	CommandSpec changeParticle = CommandSpec.builder()
 			.description(Text.of("change particle type with command"))
 			.permission("pp.admin")
-			.arguments(GenericArguments.integer(Text.of("quantity")),GenericArguments.optional(GenericArguments.string(Text.of("particle effect"))))
+			.arguments(GenericArguments.integer(Text.of("quantity")),
+					GenericArguments.optional(GenericArguments.string(Text.of("particle effect"))),
+					GenericArguments.optional(GenericArguments.longNum(Text.of("interval"))))
 			.executor(new commands.ChangeParticle())
 			.build();
 
@@ -200,17 +136,73 @@ public class darwinParticlesMain {
 		return sql.getDataSource(jdbcUrl);
 	}
 
-	
+	public void loadParticleFromDB(String worldName, String plotID) throws SQLException {
+		String tableName;
+		if (worldName.toLowerCase().contains("plot") || worldName.toLowerCase().contains("contest")) {
+			tableName = "Plots";
+		}
+		else {
+			tableName = "PrivateWorlds";
+		}
+		String query = "SELECT * from " + tableName + " where worldName = '" + worldName+ "' and where PlotID = '" + plotID + "'";
+		String uri = "jdbc:sqlite:" + root + "/ParticleStorage.db";
+		try (Connection conn2 = getDataSource(uri).getConnection()) {
+			PreparedStatement stmt = conn2.prepareStatement(query); {
+				ResultSet results = stmt.executeQuery(); {
+					while(results.next()) {
+						ArrayList<Location> locations = new ArrayList<>();
+						ArrayList<Vector3i> chunkLocations = new ArrayList<>();
+						ArrayList<ParticleEffect> effects = new ArrayList<>();
+						Long interval;
+
+						//HashMap<String, plotParticles> globalParticles;
+
+						String[] locSplit = results.getString("Location").split(",");
+
+						@SuppressWarnings("unchecked")
+						Location loc = new Location(Sponge.getServer().getWorld(worldName).get(), Double.valueOf(locSplit[0]),Double.valueOf(locSplit[1]),Double.valueOf(locSplit[2]));
+						locations.add(loc);
+						com.intellectualcrafters.plot.object.Location plotLoc = new com.intellectualcrafters.plot.object.Location();
+						plotLoc.setX(loc.getBlockX());
+						plotLoc.setY(loc.getBlockY());
+						plotLoc.setZ(loc.getBlockZ());
+						plotLoc.setWorld(worldName);
+						if (Plot.getPlot(plotLoc) != null) {
+							Plot plot = Plot.getPlot(plotLoc);
+							String[] chunkSplit = results.getString("ChunkID").replace("(", "").replace(")", "").replace("[", "").replace("]", "").replace(" ", "").split(",");
+							chunkLocations.add(new Vector3i(Integer.valueOf(chunkSplit[0]),Integer.valueOf(chunkSplit[1]),Integer.valueOf(chunkSplit[2])));
+							effects.add(getParticleFromString.get(results.getString("ParticleEffect"), results.getInt("Quantity")));
+							interval = results.getLong("Interval");
+
+							//now for the massive fucking switch statement
+							plotParticles plotParticle = null; 
+
+							if (allPlotsWithParticles.containsKey(worldName + ":" + plot.getId().toString())) {
+								plotParticle = allPlotsWithParticles.get(worldName + ":" + plot.getId().toString());
+								plotParticle.addParticles(locations, chunkLocations, effects, interval);
+							}
+							else {
+								plotParticle = new plotParticles(locations, chunkLocations, effects, interval, plotLoc);
+							}
+							allPlotsWithParticles.put(worldName + ":" + plot.getId().toString(), plotParticle);	
+
+						}						
+					}
+				}
+			}
+		}
+	}
+
 	//loop through the maps that store the particle and their locations, then run the method to spawn particles for any nearby player if that world is loaded
 	public class doParticleTask implements Runnable {
 		public void run() {
-			for (Entry<String, HashMap<String, plotParticles>> map : allPlotsWithParticles.entrySet()) {
-				if (Sponge.getServer().getWorld(map.getKey()).isPresent() && Sponge.getServer().getWorld(map.getKey()).get().isLoaded()){
-					for (Entry<String, plotParticles> map2 : map.getValue().entrySet()) {
-				//	for (int i = 0 ; i < map.getValue().size() ; i++) {
-						plotParticles pp = map2.getValue();
-						pp.spawnParticleForNearbyPlayer(25);
-					}
+			for (Entry<String, plotParticles> map : allPlotsWithParticles.entrySet()) {
+				String[] split = map.getKey().split(":");
+				if (Sponge.getServer().getWorld(split[0]).isPresent() && Sponge.getServer().getWorld(split[0]).get().isLoaded()){
+					//	for (int i = 0 ; i < map.getValue().size() ; i++) {
+					plotParticles pp = map.getValue();
+					pp.spawnParticleForNearbyPlayer();
+
 				}
 				else {
 					//allPlotsWithParticles.remove(map.getKey());
@@ -242,29 +234,23 @@ public class darwinParticlesMain {
 						.type(ParticleTypes.SMOKE)
 						.quantity(quantity)
 						.build();
-				interval = (long) 5;
+				interval = (long) 15;
 			}
 			locations.add(loc);
 			chunkLocations.add(loc.getChunkPosition());
 			effects.add(effect);
-
-			HashMap<String, plotParticles> globalParticles;
 			plotParticles plotParticle = null; 
-			
-			if (allPlotsWithParticles.containsKey(player.getLocation().getExtent().getName())) {
-				globalParticles = allPlotsWithParticles.get(player.getLocation().getExtent().getName());
+
+			if (allPlotsWithParticles.containsKey(player.getLocation().getExtent().getName() + ":" + plot.getId().toString())) {
+				plotParticle = allPlotsWithParticles.get(player.getLocation().getExtent().getName()  + ":" + plot.getId().toString());
+				plotParticle.addParticles(locations, chunkLocations, effects, interval);
 			}
 			else {
-				globalParticles = new HashMap<String, plotParticles>();
-				plotParticle = new plotParticles(locations, chunkLocations, effects, interval);
+				plotParticle = new plotParticles(locations, chunkLocations, effects, interval, plotLoc);
 			}
-			if (globalParticles.containsKey(plot.getId().toString())) {
-			plotParticle = globalParticles.get(plot.getId().toString());
-			plotParticle.addParticles(locations, chunkLocations, effects, interval);
-			}
-			else {
-				plotParticle = new plotParticles(locations, chunkLocations, effects, interval);
-			}
+			allPlotsWithParticles.put(player.getLocation().getExtent().getName() + ":" + plot.getId().toString(), plotParticle);	
+
+
 			String uri = "jdbc:sqlite:" + rootSingleton.getInstance().getRoot() + "/ParticleStorage.db";
 			String tableName = null;
 			if (player.getLocation().getExtent().getName().toLowerCase().contains("plot") || player.getLocation().getExtent().getName().toLowerCase().contains("contest")) {
@@ -273,15 +259,16 @@ public class darwinParticlesMain {
 			else {
 				tableName = "PrivateWorlds";
 			}
-			String insertQuery = "INSERT INTO " + tableName + "(WorldName, ChunkID, Location, ParticleEffect, Quantity, Interval) values (?, ?, ?, ?, ?, ?)";
+			String insertQuery = "INSERT INTO " + tableName + "(WorldName, PlotID, ChunkID, Location, ParticleEffect, Quantity, Interval) values (?, ?, ?, ?, ?, ?, ?)";
 			try (Connection conn = getDataSource(uri).getConnection()) {
 				PreparedStatement stmt = conn.prepareStatement(insertQuery); {
 					stmt.setString(1, player.getLocation().getExtent().getName());
-					stmt.setString(2, chunkLocations.toString());
-					stmt.setString(3, loc.getX() + "," + loc.getY() + "," + loc.getZ());
-					stmt.setString(4, effect.getType().getName());
-					stmt.setInt(5, quantity);
-					stmt.setLong(6, interval);
+					stmt.setString(2, plot.getId().toString());
+					stmt.setString(3, chunkLocations.toString());
+					stmt.setString(4, loc.getX() + "," + loc.getY() + "," + loc.getZ());
+					stmt.setString(5, effect.getType().getName());
+					stmt.setInt(6, quantity);
+					stmt.setLong(7, interval);
 					stmt.execute();
 					conn.close();
 				}
@@ -289,8 +276,7 @@ public class darwinParticlesMain {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			globalParticles.put(plot.getId().toString(), plotParticle);
-			allPlotsWithParticles.put(player.getLocation().getExtent().getName(), globalParticles);
+			allPlotsWithParticles.put(player.getLocation().getExtent().getName() + ":" + plot.getId().toString(), plotParticle);
 			player.spawnParticles(effect, new Vector3d(loc.getX(), loc.getY(), loc.getZ()));
 			player.sendMessage(Text.of(darwinParticlesMain.particlesDefault, "Spawning particle ", effect.getType().getName(), " with quantity of ", quantity));
 		}
@@ -303,13 +289,13 @@ public class darwinParticlesMain {
 				@SuppressWarnings("unchecked")
 				Location loc;
 				if (event.getTargetBlock().getLocation().get().getExtent() != null && event.getInteractionPoint().isPresent()) {
-				loc = new Location(event.getTargetBlock().getLocation().get().getExtent(), event.getInteractionPoint().get());
+					loc = new Location(event.getTargetBlock().getLocation().get().getExtent(), event.getInteractionPoint().get());
 				}
 				else {
 					loc = player.getLocation();
 				}
 				addNewParticle(loc, player);
-				
+
 			}
 		}
 	}
