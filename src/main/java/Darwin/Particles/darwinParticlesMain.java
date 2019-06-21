@@ -51,6 +51,8 @@ import com.intellectualcrafters.plot.object.Plot;
 
 import Darwin.Particles.commands.commands;
 import Darwin.Particles.events.moveEvents;
+import Darwin.Particles.tasks.doParticleTask;
+import Darwin.Particles.tasks.loadParticleTask;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 
@@ -149,55 +151,9 @@ public class darwinParticlesMain {
 
 	
 	//loop through the maps that store the particle and their locations, then run the method to spawn particles for any nearby player if that world is loaded
-	public class doParticleTask implements Runnable {
-		public void run() {
-			for (Entry<String, plotParticles> map : allPlotsWithParticles.entrySet()) {
-				String[] split = map.getKey().split(":");
-				if (Sponge.getServer().getWorld(split[0]).isPresent() && Sponge.getServer().getWorld(split[0]).get().isLoaded()){
-					//	for (int i = 0 ; i < map.getValue().size() ; i++) {
-					plotParticles pp = map.getValue();
-					pp.spawnParticleForNearbyPlayer();
-				}
-				else {
-					//allPlotsWithParticles.remove(map.getKey());
-				}
-			}
-		}
-	}
+
 	
-	public class loadParticleTask implements Runnable {
-		public void run() {
-					for (int i = 0 ; i < plotsToLoadParticles.size() ; i++) {
-						com.intellectualcrafters.plot.object.Location plotLoc = plotsToLoadParticles.get(i);
-						if (Plot.getPlot(plotLoc) != null && Plot.getPlot(plotLoc).getPlayersInPlot().size() > 0) {
-							Plot plot = Plot.getPlot(plotLoc);
-							plotsToLoadParticles.remove(i);
-							Sponge.getServer().getConsole().sendMessage(Text.of(particlesDefault, " Loading ", plot.getWorldName() + ":" + plot.getId().toString()));
-							try {
-								darwinParticlesMain.db.loadParticleFromDB(plot.getWorldName(), plot.getId().toString());
-							} catch (SQLException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-						}
-						else {
-							plotsToLoadParticles.remove(i);
-						}
-				}
-					for (int i = 0 ; i < plotsTounLoadParticles.size() ; i++) {
-						com.intellectualcrafters.plot.object.Location plotLoc = plotsTounLoadParticles.get(i);
-						if (Plot.getPlot(plotLoc) != null && Plot.getPlot(plotLoc).getPlayersInPlot().size() == 0) {
-							Plot plot = Plot.getPlot(plotLoc);
-							plotsTounLoadParticles.remove(i);
-							allPlotsWithParticles.remove(plot.getWorldName() + ":" + plot.getId().toString());
-							Sponge.getServer().getConsole().sendMessage(Text.of(particlesDefault, " Unloading ", plot.getWorldName() + ":" + plot.getId().toString()));
-						}
-						else {
-							plotsTounLoadParticles.remove(i);
-						}
-				}
-			}
-		}
+	
 	
 	public static void addNewParticle(Location loc, Player player) {
 		com.intellectualcrafters.plot.object.Location plotLoc = new com.intellectualcrafters.plot.object.Location();
