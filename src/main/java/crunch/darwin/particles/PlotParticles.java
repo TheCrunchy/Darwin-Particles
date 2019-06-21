@@ -53,16 +53,12 @@ public class PlotParticles {
 		//also do database code
 	}
 	
-	public void showParticlesInChunk(Vector3i loc, Player player) {
+	public ArrayList<Text> showParticlesInChunk(Vector3i loc, Player player) {
 		ArrayList<Text> contents = new ArrayList<>();
 		for (Entry<Location, ParticleEffect> particleLoc : chunksWithParticles.get(loc).entrySet()) {
 			contents.add(Text.of(particleLoc.getValue().getType().getName(), " ", particleLoc.getKey().getX(), " ", particleLoc.getKey().getY(), " ", particleLoc.getKey().getZ()));
 		}
-		PaginationList.builder()
-	    .contents(contents)
-	    .title(Text.of("Particles in chunk - ", loc))
-	    .padding(Text.of("="))
-	    .sendTo(player);
+		return contents;
 	}
 	public void addParticles(ArrayList<Location> locations, ArrayList<Vector3i> chunkLocations, ArrayList<ParticleEffect> effects, Long interval){
 		for (int i = 0 ; i < chunkLocations.size() ; i++) {
@@ -91,6 +87,9 @@ public class PlotParticles {
 		}
 		if (player.hasPermission("particles.limit.16")) {
 			limit =  16;
+		}
+		if (player.hasPermission("particles.limit.100")) {
+			limit =  100;
 		}
 		return limit;
 	}

@@ -1,6 +1,8 @@
 package crunch.darwin.particles.commands;
 
 
+import java.util.ArrayList;
+
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
@@ -10,6 +12,7 @@ import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.effect.particle.ParticleEffect;
 import org.spongepowered.api.effect.particle.ParticleTypes;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.service.pagination.PaginationList;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.world.Location;
 
@@ -87,7 +90,12 @@ public class Commands {
 				Plot plot = Plot.getPlot(plotLoc);
 			if (DarwinParticlesMain.allPlotsWithParticles.containsKey(player.getLocation().getExtent().getName() + ":" + plot.getId().toString())) {
 				PlotParticles pp =  DarwinParticlesMain.allPlotsWithParticles.get(player.getLocation().getExtent().getName() + ":" + plot.getId().toString());
-				pp.showParticlesInChunk(loc.getChunkPosition(), player);
+				ArrayList<Text> contents = pp.showParticlesInChunk(loc.getChunkPosition(), player);
+				PaginationList.builder()
+			    .contents(contents)
+			    .title(Text.of("Particles in chunk - ", loc))
+			    .padding(Text.of("="))
+			    .sendTo(player);
 				}
 			else {
 				player.sendMessage(Text.of("The chunk you are in does not currently have any particles loaded, wait 5 seconds then try again."));

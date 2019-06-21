@@ -180,6 +180,15 @@ public class DarwinParticlesMain {
 			else {
 				plotParticle = new PlotParticles(locations, chunkLocations, effects, interval, plotLoc);
 			}
+			
+			ArrayList<Text> contents = plotParticle.showParticlesInChunk(loc.getChunkPosition(), player);
+			int max = plotParticle.getPlayerLimit(player);
+			if (contents.size() >= max) {
+				player.sendMessage(Text.of(DarwinParticlesMain.particlesDefault, " You have reached the limit of ", max ," particles for this chunk"));
+				return;
+			}
+			
+			
 			allPlotsWithParticles.put(player.getLocation().getExtent().getName() + ":" + plot.getId().toString(), plotParticle);	
 
 			//make a method in the database for this shit so its out of this class
