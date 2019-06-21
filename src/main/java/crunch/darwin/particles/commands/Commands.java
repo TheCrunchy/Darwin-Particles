@@ -13,10 +13,12 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.world.Location;
 
+import com.intellectualcrafters.plot.object.Plot;
 
 import crunch.darwin.particles.DarwinParticlesMain;
 import crunch.darwin.particles.GetParticleFromString;
 import crunch.darwin.particles.PlayerData;
+import crunch.darwin.particles.PlotParticles;
 
 public class Commands {
 	public static class ChangeParticle implements CommandExecutor {
@@ -66,6 +68,31 @@ public class Commands {
 		public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
 			Player player = (Player) src;
 			player.getInventory().offer(DarwinParticlesMain.makePPStick());
+			return CommandResult.success();
+		}
+
+	}
+	
+	public static class getParticlesInChunk implements CommandExecutor {
+		@Override
+		public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
+			Player player = (Player) src;
+			com.intellectualcrafters.plot.object.Location plotLoc = new com.intellectualcrafters.plot.object.Location();
+			Location loc = player.getLocation();
+			plotLoc.setX(loc.getBlockX());
+			plotLoc.setY(loc.getBlockY());
+			plotLoc.setZ(loc.getBlockZ());
+			plotLoc.setWorld(player.getLocation().getExtent().getName());
+			if (Plot.getPlot(plotLoc) != null) {
+				Plot plot = Plot.getPlot(plotLoc);
+			if (DarwinParticlesMain.allPlotsWithParticles.containsKey(player.getLocation().getExtent().getName() + ":" + plot.getId().toString())) {
+				PlotParticles pp =  DarwinParticlesMain.allPlotsWithParticles.get(player.getLocation().getExtent().getName() + ":" + plot.getId().toString());
+				pp.showParticlesInChunk(loc.getChunkPosition(), player);
+				}
+			else {
+				player.sendMessage(Text.of("The chunk you are in does not currently have any particles loaded, wait 5 seconds then try again."));
+			}
+			}
 			return CommandResult.success();
 		}
 

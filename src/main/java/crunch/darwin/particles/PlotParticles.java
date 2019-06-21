@@ -12,6 +12,7 @@ import org.spongepowered.api.effect.particle.ParticleEffect;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.EntityTypes;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.service.pagination.PaginationList;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
@@ -50,6 +51,18 @@ public class PlotParticles {
 	public void removeFromMap(Vector3i chunk, Location loc) {
 		chunksWithParticles.get(chunk).remove(loc);
 		//also do database code
+	}
+	
+	public void showParticlesInChunk(Vector3i loc, Player player) {
+		ArrayList<Text> contents = new ArrayList<>();
+		for (Entry<Location, ParticleEffect> particleLoc : chunksWithParticles.get(loc).entrySet()) {
+			contents.add(Text.of(particleLoc.getValue().getType().getName(), " ", particleLoc.getKey().getX(), " ", particleLoc.getKey().getY(), " ", particleLoc.getKey().getZ()));
+		}
+		PaginationList.builder()
+	    .contents(contents)
+	    .title(Text.of("Particles in chunk - ", loc))
+	    .padding(Text.of("="))
+	    .sendTo(player);
 	}
 	public void addParticles(ArrayList<Location> locations, ArrayList<Vector3i> chunkLocations, ArrayList<ParticleEffect> effects, Long interval){
 		for (int i = 0 ; i < chunkLocations.size() ; i++) {

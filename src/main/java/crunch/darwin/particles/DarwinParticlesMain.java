@@ -109,12 +109,18 @@ public class DarwinParticlesMain {
 			.permission("pp.admin")
 			.executor(new Commands.getStick())
 			.build();
+	CommandSpec showParticlesInChunk = CommandSpec.builder()
+			.description(Text.of("Toggle main command"))
+			.permission("pp.admin")
+			.executor(new Commands.getParticlesInChunk())
+			.build();
 	CommandSpec makeTest = CommandSpec.builder()
 			.description(Text.of("Toggle main command"))
 			.child(makeParticle, "make")
 			.child(changeParticle, "change")
 			.child(deleteParticles, "delete")
 			.child(getStick, "getStick")
+			.child(showParticlesInChunk, "show")
 			.build();
 
 	public static ItemStack makePPStick() {
