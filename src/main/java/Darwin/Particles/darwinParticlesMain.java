@@ -50,6 +50,7 @@ import com.google.inject.Inject;
 import com.intellectualcrafters.plot.object.Plot;
 
 import Darwin.Particles.commands.commands;
+import Darwin.Particles.events.moveEvents;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 
@@ -69,21 +70,31 @@ public class darwinParticlesMain {
 	public static  HashMap<UUID, playerData> playerData = new HashMap<>();
 
 	public static Text particlesDefault = Text.of(TextColors.LIGHT_PURPLE, "Particles - ");
+	
+	public static ArrayList<com.intellectualcrafters.plot.object.Location> plotsToLoadParticles = new ArrayList<>();
+	public static ArrayList<com.intellectualcrafters.plot.object.Location> plotsTounLoadParticles = new ArrayList<>();
+	
+	public static DatabaseStuff db;
+	
+	private HashMap<String, String> enabledParticles = new HashMap<>();
 	@Listener
 	public void onServerFinishLoad(GameStartedServerEvent event) throws SQLException {
 		//bad code, probably not necessary but i fucking hate making the root work for a database
 		staticRoots = root;
 		rootSingleton.getInstance().setRoot(staticRoots);
-		DatabaseCreation db = new DatabaseCreation(sql);
-
+	    db = new DatabaseStuff(sql);
 		//rest of this shit is fine
 		Sponge.getCommandManager().register(this, makeTest, "particleplacer", "pap");
 		Sponge.getEventManager().registerListeners(this, new doRightClick());
+		Sponge.getEventManager().registerListeners(this, new moveEvents());
 		Collection<World> allWorlds = Sponge.getServer().getWorlds();
-		System.out.println(allPlotsWithParticles.entrySet());
 		Task doParticleTask = Task.builder().execute(new doParticleTask())
 				.interval(1, TimeUnit.SECONDS)
 				.name("spawnParticles").submit(this);
+		Task loadParticleTask = Task.builder().execute(new loadParticleTask())
+				.interval(5, TimeUnit.SECONDS)
+				.async()
+				.name("loadParticles").submit(this);
 	}
 
 
@@ -136,63 +147,7 @@ public class darwinParticlesMain {
 		return sql.getDataSource(jdbcUrl);
 	}
 
-	public void loadParticleFromDB(String worldName, String plotID) throws SQLException {
-		String tableName;
-		if (worldName.toLowerCase().contains("plot") || worldName.toLowerCase().contains("contest")) {
-			tableName = "Plots";
-		}
-		else {
-			tableName = "PrivateWorlds";
-		}
-		String query = "SELECT * from " + tableName + " where worldName = '" + worldName+ "' and where PlotID = '" + plotID + "'";
-		String uri = "jdbc:sqlite:" + root + "/ParticleStorage.db";
-		try (Connection conn2 = getDataSource(uri).getConnection()) {
-			PreparedStatement stmt = conn2.prepareStatement(query); {
-				ResultSet results = stmt.executeQuery(); {
-					while(results.next()) {
-						ArrayList<Location> locations = new ArrayList<>();
-						ArrayList<Vector3i> chunkLocations = new ArrayList<>();
-						ArrayList<ParticleEffect> effects = new ArrayList<>();
-						Long interval;
-
-						//HashMap<String, plotParticles> globalParticles;
-
-						String[] locSplit = results.getString("Location").split(",");
-
-						@SuppressWarnings("unchecked")
-						Location loc = new Location(Sponge.getServer().getWorld(worldName).get(), Double.valueOf(locSplit[0]),Double.valueOf(locSplit[1]),Double.valueOf(locSplit[2]));
-						locations.add(loc);
-						com.intellectualcrafters.plot.object.Location plotLoc = new com.intellectualcrafters.plot.object.Location();
-						plotLoc.setX(loc.getBlockX());
-						plotLoc.setY(loc.getBlockY());
-						plotLoc.setZ(loc.getBlockZ());
-						plotLoc.setWorld(worldName);
-						if (Plot.getPlot(plotLoc) != null) {
-							Plot plot = Plot.getPlot(plotLoc);
-							String[] chunkSplit = results.getString("ChunkID").replace("(", "").replace(")", "").replace("[", "").replace("]", "").replace(" ", "").split(",");
-							chunkLocations.add(new Vector3i(Integer.valueOf(chunkSplit[0]),Integer.valueOf(chunkSplit[1]),Integer.valueOf(chunkSplit[2])));
-							effects.add(getParticleFromString.get(results.getString("ParticleEffect"), results.getInt("Quantity")));
-							interval = results.getLong("Interval");
-
-							//now for the massive fucking switch statement
-							plotParticles plotParticle = null; 
-
-							if (allPlotsWithParticles.containsKey(worldName + ":" + plot.getId().toString())) {
-								plotParticle = allPlotsWithParticles.get(worldName + ":" + plot.getId().toString());
-								plotParticle.addParticles(locations, chunkLocations, effects, interval);
-							}
-							else {
-								plotParticle = new plotParticles(locations, chunkLocations, effects, interval, plotLoc);
-							}
-							allPlotsWithParticles.put(worldName + ":" + plot.getId().toString(), plotParticle);	
-
-						}						
-					}
-				}
-			}
-		}
-	}
-
+	
 	//loop through the maps that store the particle and their locations, then run the method to spawn particles for any nearby player if that world is loaded
 	public class doParticleTask implements Runnable {
 		public void run() {
@@ -202,7 +157,6 @@ public class darwinParticlesMain {
 					//	for (int i = 0 ; i < map.getValue().size() ; i++) {
 					plotParticles pp = map.getValue();
 					pp.spawnParticleForNearbyPlayer();
-
 				}
 				else {
 					//allPlotsWithParticles.remove(map.getKey());
@@ -210,6 +164,41 @@ public class darwinParticlesMain {
 			}
 		}
 	}
+	
+	public class loadParticleTask implements Runnable {
+		public void run() {
+					for (int i = 0 ; i < plotsToLoadParticles.size() ; i++) {
+						com.intellectualcrafters.plot.object.Location plotLoc = plotsToLoadParticles.get(i);
+						if (Plot.getPlot(plotLoc) != null && Plot.getPlot(plotLoc).getPlayersInPlot().size() > 0) {
+							Plot plot = Plot.getPlot(plotLoc);
+							plotsToLoadParticles.remove(i);
+							Sponge.getServer().getConsole().sendMessage(Text.of(particlesDefault, " Loading ", plot.getWorldName() + ":" + plot.getId().toString()));
+							try {
+								darwinParticlesMain.db.loadParticleFromDB(plot.getWorldName(), plot.getId().toString());
+							} catch (SQLException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						}
+						else {
+							plotsToLoadParticles.remove(i);
+						}
+				}
+					for (int i = 0 ; i < plotsTounLoadParticles.size() ; i++) {
+						com.intellectualcrafters.plot.object.Location plotLoc = plotsTounLoadParticles.get(i);
+						if (Plot.getPlot(plotLoc) != null && Plot.getPlot(plotLoc).getPlayersInPlot().size() == 0) {
+							Plot plot = Plot.getPlot(plotLoc);
+							plotsTounLoadParticles.remove(i);
+							allPlotsWithParticles.remove(plot.getWorldName() + ":" + plot.getId().toString());
+							Sponge.getServer().getConsole().sendMessage(Text.of(particlesDefault, " Unloading ", plot.getWorldName() + ":" + plot.getId().toString()));
+						}
+						else {
+							plotsTounLoadParticles.remove(i);
+						}
+				}
+			}
+		}
+	
 	public static void addNewParticle(Location loc, Player player) {
 		com.intellectualcrafters.plot.object.Location plotLoc = new com.intellectualcrafters.plot.object.Location();
 		plotLoc.setX(loc.getBlockX());

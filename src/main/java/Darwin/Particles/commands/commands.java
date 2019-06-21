@@ -31,10 +31,16 @@ public class commands {
 		@Override
 		public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
 			Player player = (Player) src;
-			ParticleEffect type;
+			ParticleEffect type = null;
 			Long interval;
 			if (args.getOne("particle effect").isPresent()) {
+				if (getParticleFromString.get(args.getOne("particle effect").get().toString().toLowerCase(), Integer.valueOf(args.getOne("quantity").get().toString())) != null) {
 			type = getParticleFromString.get(args.getOne("particle effect").get().toString().toLowerCase(), Integer.valueOf(args.getOne("quantity").get().toString()));
+				}
+				else {
+					src.sendMessage(Text.of(darwinParticlesMain.particlesDefault, " That particle does not exist or is not enabled"));
+					return CommandResult.success();
+				}
 			}
 			else {
 				if (darwinParticlesMain.playerData.containsKey(player.getUniqueId())) {

@@ -1,3 +1,4 @@
+package deprecated;
 //package Darwin.Particles.deprecated;
 //
 //import java.nio.file.Path;
