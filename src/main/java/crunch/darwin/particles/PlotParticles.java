@@ -78,7 +78,22 @@ public class PlotParticles {
 			chunksWithParticles.put(chunkLocations.get(i), particlesAtLocation);
 		}
 	}
-
+	public Integer getPlayerLimit(Player player) {
+		int limit = 0;
+		if (player.hasPermission("particles.limit.4")) {
+			limit = 4;
+		}
+		if (player.hasPermission("particles.limit.8")) {
+			limit =  8;
+		}
+		if (player.hasPermission("particles.limit.12")) {
+			limit =  12;
+		}
+		if (player.hasPermission("particles.limit.16")) {
+			limit =  16;
+		}
+		return limit;
+	}
 	//spawn the particle effect for nearby player, loop through the particles stored for this plot to achieve this.
 	@SuppressWarnings("unchecked")
 	public void spawnParticleForNearbyPlayer() {
