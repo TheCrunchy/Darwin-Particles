@@ -3,25 +3,18 @@ package Darwin.Particles;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import javax.sql.DataSource;
 
 import org.spongepowered.api.Sponge;
-import org.spongepowered.api.command.CommandException;
-import org.spongepowered.api.command.CommandResult;
-import org.spongepowered.api.command.CommandSource;
-import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.args.GenericArguments;
-import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.config.DefaultConfig;
@@ -78,18 +71,15 @@ public class darwinParticlesMain {
 	
 	public static DatabaseStuff db;
 	
-	private HashMap<String, String> enabledParticles = new HashMap<>();
 	@Listener
 	public void onServerFinishLoad(GameStartedServerEvent event) throws SQLException {
 		//bad code, probably not necessary but i fucking hate making the root work for a database
 		staticRoots = root;
 		rootSingleton.getInstance().setRoot(staticRoots);
 	    db = new DatabaseStuff(sql);
-		//rest of this shit is fine
 		Sponge.getCommandManager().register(this, makeTest, "particleplacer", "pap");
 		Sponge.getEventManager().registerListeners(this, new doRightClick());
 		Sponge.getEventManager().registerListeners(this, new moveEvents());
-		Collection<World> allWorlds = Sponge.getServer().getWorlds();
 		Task doParticleTask = Task.builder().execute(new doParticleTask())
 				.interval(1, TimeUnit.SECONDS)
 				.name("spawnParticles").submit(this);
@@ -98,9 +88,6 @@ public class darwinParticlesMain {
 				.async()
 				.name("loadParticles").submit(this);
 	}
-
-
-
 	CommandSpec changeParticle = CommandSpec.builder()
 			.description(Text.of("change particle type with command"))
 			.permission("pp.admin")
@@ -109,7 +96,6 @@ public class darwinParticlesMain {
 					GenericArguments.optional(GenericArguments.longNum(Text.of("interval"))))
 			.executor(new commands.ChangeParticle())
 			.build();
-
 	CommandSpec deleteParticles = CommandSpec.builder()
 			.description(Text.of("change particle type with command"))
 			.permission("pp.admin")
@@ -141,18 +127,15 @@ public class darwinParticlesMain {
 		itemLore.add(Text.of(TextColors.BLUE, "Your very own PP Stick made by Crunch"));
 		ppStick.offer(Keys.ITEM_LORE, itemLore);
 		return ppStick;
-	} 
+	}
+	
+	//might move all database stuff in this class to the database class
 	public static DataSource getDataSource(String jdbcUrl) throws SQLException {
 		if (sql == null) {
 			sql = Sponge.getServiceManager().provide(SqlService.class).get();
 		}
 		return sql.getDataSource(jdbcUrl);
 	}
-
-	
-	//loop through the maps that store the particle and their locations, then run the method to spawn particles for any nearby player if that world is loaded
-
-	
 	
 	
 	public static void addNewParticle(Location loc, Player player) {
@@ -195,7 +178,7 @@ public class darwinParticlesMain {
 			}
 			allPlotsWithParticles.put(player.getLocation().getExtent().getName() + ":" + plot.getId().toString(), plotParticle);	
 
-
+			//make a method in the database for this shit so its out of this class
 			String uri = "jdbc:sqlite:" + rootSingleton.getInstance().getRoot() + "/ParticleStorage.db";
 			String tableName = null;
 			if (player.getLocation().getExtent().getName().toLowerCase().contains("plot") || player.getLocation().getExtent().getName().toLowerCase().contains("contest")) {
@@ -244,8 +227,6 @@ public class darwinParticlesMain {
 			}
 		}
 	}
-
-
 	public static void spawnParticlesAtVector3(Player player, ParticleEffect effect, Vector3d Vector3Location) {
 		player.spawnParticles(effect, Vector3Location);
 	}
