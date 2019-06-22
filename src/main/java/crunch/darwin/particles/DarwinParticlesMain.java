@@ -63,18 +63,18 @@ public class DarwinParticlesMain {
 	public static  HashMap<UUID, PlayerData> playerData = new HashMap<>();
 
 	public static Text particlesDefault = Text.of(TextColors.LIGHT_PURPLE, "Particles - ");
-	
+
 	public static ArrayList<com.intellectualcrafters.plot.object.Location> plotsToLoadParticles = new ArrayList<>();
 	public static ArrayList<com.intellectualcrafters.plot.object.Location> plotsTounLoadParticles = new ArrayList<>();
-	
+
 	public static DatabaseStuff db;
-	
+
 	@Listener
 	public void onServerFinishLoad(GameStartedServerEvent event) throws SQLException {
 		//bad code, probably not necessary but i fucking hate making the root work for a database
 		staticRoots = root;
 		RootSingleton.getInstance().setRoot(staticRoots);
-	    db = new DatabaseStuff(sql);
+		db = new DatabaseStuff(sql);
 		Sponge.getCommandManager().register(this, makeTest, "particleplacer", "pap");
 		Sponge.getEventManager().registerListeners(this, new doRightClick());
 		Sponge.getEventManager().registerListeners(this, new MoveEvents());
@@ -132,7 +132,7 @@ public class DarwinParticlesMain {
 		ppStick.offer(Keys.ITEM_LORE, itemLore);
 		return ppStick;
 	}
-	
+
 	//might move all database stuff in this class to the database class
 	public static DataSource getDataSource(String jdbcUrl) throws SQLException {
 		if (sql == null) {
@@ -140,8 +140,8 @@ public class DarwinParticlesMain {
 		}
 		return sql.getDataSource(jdbcUrl);
 	}
-	
-	
+
+
 	public static void addNewParticle(Location loc, Player player) {
 		com.intellectualcrafters.plot.object.Location plotLoc = new com.intellectualcrafters.plot.object.Location();
 		plotLoc.setX(loc.getBlockX());
@@ -149,80 +149,84 @@ public class DarwinParticlesMain {
 		plotLoc.setZ(loc.getBlockZ());
 		plotLoc.setWorld(player.getLocation().getExtent().getName());
 		if (Plot.getPlot(plotLoc) != null) {
+
 			Plot plot = Plot.getPlot(plotLoc);
-			ArrayList<Location> locations = new ArrayList<>();
-			ArrayList<Vector3i> chunkLocations = new ArrayList<>();
-			ArrayList<ParticleEffect> effects = new ArrayList<>();
-			Long interval;
-			int quantity = 10;
-			ParticleEffect effect;
-			if (playerData.containsKey(player.getUniqueId())) {
-				effect = playerData.get(player.getUniqueId()).getEffect();
-				quantity = playerData.get(player.getUniqueId()).getQuantity();
-				interval = playerData.get(player.getUniqueId()).getInterval();
-			}
-			else {
-				effect = ParticleEffect.builder()
-						.type(ParticleTypes.SMOKE)
-						.quantity(quantity)
-						.build();
-				interval = (long) 15;
-			}
-			locations.add(loc);
-			chunkLocations.add(loc.getChunkPosition());
-			effects.add(effect);
-			PlotParticles plotParticle = null; 
+			if (plot.isAdded(player.getUniqueId()) || player.hasPermission("plots.admin.build.other")) {
 
-			if (allPlotsWithParticles.containsKey(player.getLocation().getExtent().getName() + ":" + plot.getId().toString())) {
-				plotParticle = allPlotsWithParticles.get(player.getLocation().getExtent().getName()  + ":" + plot.getId().toString());
-				plotParticle.addParticles(locations, chunkLocations, effects, interval);
-			}
-			else {
-				plotParticle = new PlotParticles(locations, chunkLocations, effects, interval, plotLoc);
-			}
-			
-			ArrayList<Text> contents = plotParticle.showParticlesInChunk(loc.getChunkPosition(), player);
-			int max = plotParticle.getPlayerLimit(player);
-			if (contents.size() >= max) {
-				player.sendMessage(Text.of(DarwinParticlesMain.particlesDefault, " You have reached the limit of ", max ," particles for this chunk"));
-				return;
-			}
-			
-			
-			allPlotsWithParticles.put(player.getLocation().getExtent().getName() + ":" + plot.getId().toString(), plotParticle);	
 
-			//make a method in the database for this shit so its out of this class
-			String uri = "jdbc:sqlite:" + RootSingleton.getInstance().getRoot() + "/ParticleStorage.db";
-			String tableName = null;
-			if (player.getLocation().getExtent().getName().toLowerCase().contains("plot") || player.getLocation().getExtent().getName().toLowerCase().contains("contest")) {
-				tableName = "Plots";
-			}
-			else {
-				tableName = "PrivateWorlds";
-			}
-			String insertQuery = "INSERT INTO " + tableName + "(WorldName, PlotID, ChunkID, Location, ParticleEffect, Quantity, Interval) values (?, ?, ?, ?, ?, ?, ?)";
-			try (Connection conn = getDataSource(uri).getConnection()) {
-				PreparedStatement stmt = conn.prepareStatement(insertQuery); {
-					stmt.setString(1, player.getLocation().getExtent().getName());
-					stmt.setString(2, plot.getId().toString());
-					stmt.setString(3, chunkLocations.toString());
-					stmt.setString(4, loc.getX() + "," + loc.getY() + "," + loc.getZ());
-					stmt.setString(5, effect.getType().getName());
-					stmt.setInt(6, quantity);
-					stmt.setLong(7, interval);
-					stmt.execute();
-					conn.close();
+				ArrayList<Location> locations = new ArrayList<>();
+				ArrayList<Vector3i> chunkLocations = new ArrayList<>();
+				ArrayList<ParticleEffect> effects = new ArrayList<>();
+				Long interval;
+				int quantity = 10;
+				ParticleEffect effect;
+				if (playerData.containsKey(player.getUniqueId())) {
+					effect = playerData.get(player.getUniqueId()).getEffect();
+					quantity = playerData.get(player.getUniqueId()).getQuantity();
+					interval = playerData.get(player.getUniqueId()).getInterval();
 				}
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				else {
+					effect = ParticleEffect.builder()
+							.type(ParticleTypes.SMOKE)
+							.quantity(quantity)
+							.build();
+					interval = (long) 15;
+				}
+				locations.add(loc);
+				chunkLocations.add(loc.getChunkPosition());
+				effects.add(effect);
+				PlotParticles plotParticle = null; 
+
+				if (allPlotsWithParticles.containsKey(player.getLocation().getExtent().getName() + ":" + plot.getId().toString())) {
+					plotParticle = allPlotsWithParticles.get(player.getLocation().getExtent().getName()  + ":" + plot.getId().toString());
+					plotParticle.addParticles(locations, chunkLocations, effects, interval);
+				}
+				else {
+					plotParticle = new PlotParticles(locations, chunkLocations, effects, interval, plotLoc);
+				}
+
+				ArrayList<Text> contents = plotParticle.showParticlesInChunk(loc.getChunkPosition(), player);
+				int max = plotParticle.getPlayerLimit(player);
+				if (contents.size() >= max) {
+					player.sendMessage(Text.of(DarwinParticlesMain.particlesDefault, " You have reached the limit of ", max ," particles for this chunk"));
+					return;
+				}
+
+
+				allPlotsWithParticles.put(player.getLocation().getExtent().getName() + ":" + plot.getId().toString(), plotParticle);	
+
+				//make a method in the database for this shit so its out of this class
+				String uri = "jdbc:sqlite:" + RootSingleton.getInstance().getRoot() + "/ParticleStorage.db";
+				String tableName = null;
+				if (player.getLocation().getExtent().getName().toLowerCase().contains("plot") || player.getLocation().getExtent().getName().toLowerCase().contains("contest")) {
+					tableName = "Plots";
+				}
+				else {
+					tableName = "PrivateWorlds";
+				}
+				String insertQuery = "INSERT INTO " + tableName + "(WorldName, PlotID, ChunkID, Location, ParticleEffect, Quantity, Interval) values (?, ?, ?, ?, ?, ?, ?)";
+				try (Connection conn = getDataSource(uri).getConnection()) {
+					PreparedStatement stmt = conn.prepareStatement(insertQuery); {
+						stmt.setString(1, player.getLocation().getExtent().getName());
+						stmt.setString(2, plot.getId().toString());
+						stmt.setString(3, chunkLocations.toString());
+						stmt.setString(4, loc.getX() + "," + loc.getY() + "," + loc.getZ());
+						stmt.setString(5, effect.getType().getName());
+						stmt.setInt(6, quantity);
+						stmt.setLong(7, interval);
+						stmt.execute();
+						conn.close();
+					}
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				allPlotsWithParticles.put(player.getLocation().getExtent().getName() + ":" + plot.getId().toString(), plotParticle);
+				player.spawnParticles(effect, new Vector3d(loc.getX(), loc.getY(), loc.getZ()));
+				player.sendMessage(Text.of(DarwinParticlesMain.particlesDefault, "Spawning particle ", effect.getType().getName(), " with quantity of ", quantity));
 			}
-			allPlotsWithParticles.put(player.getLocation().getExtent().getName() + ":" + plot.getId().toString(), plotParticle);
-			player.spawnParticles(effect, new Vector3d(loc.getX(), loc.getY(), loc.getZ()));
-			player.sendMessage(Text.of(DarwinParticlesMain.particlesDefault, "Spawning particle ", effect.getType().getName(), " with quantity of ", quantity));
 		}
 	}
-
 	public class doRightClick {
 		@Listener
 		public void onBlockClick(InteractBlockEvent.Secondary.MainHand event, @First Player player) {
