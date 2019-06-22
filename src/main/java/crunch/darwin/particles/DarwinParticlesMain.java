@@ -230,7 +230,7 @@ public class DarwinParticlesMain {
 	public class doRightClick {
 		@Listener
 		public void onBlockClick(InteractBlockEvent.Secondary.MainHand event, @First Player player) {
-			if (player.getItemInHand(HandTypes.MAIN_HAND) != null && player.getItemInHand(HandTypes.MAIN_HAND).get().equalTo(makePPStick())){		
+			if (player.getItemInHand(HandTypes.MAIN_HAND).isPresent() && player.getItemInHand(HandTypes.MAIN_HAND).get().equalTo(makePPStick())){		
 				@SuppressWarnings("unchecked")
 				Location loc;
 				if (event.getTargetBlock().getLocation().get().getExtent() != null && event.getInteractionPoint().isPresent()) {
