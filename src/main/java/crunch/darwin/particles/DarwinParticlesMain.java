@@ -233,8 +233,8 @@ public class DarwinParticlesMain {
 			if (player.getItemInHand(HandTypes.MAIN_HAND).isPresent() && player.getItemInHand(HandTypes.MAIN_HAND).get().equalTo(makePPStick())){		
 				@SuppressWarnings("unchecked")
 				Location loc;
-				if (event.getTargetBlock().getLocation().get().getExtent() != null && event.getInteractionPoint().isPresent()) {
-					loc = new Location(event.getTargetBlock().getLocation().get().getExtent(), event.getInteractionPoint().get());
+				if (player.getLocation().getExtent() != null && event.getInteractionPoint().isPresent()) {
+					loc = new Location(player.getLocation().getExtent(), event.getInteractionPoint().get());
 				}
 				else {
 					loc = player.getLocation();
