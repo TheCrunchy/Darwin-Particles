@@ -94,11 +94,6 @@ public class DarwinParticlesMain {
 					GenericArguments.optional(GenericArguments.longNum(Text.of("interval"))))
 			.executor(new Commands.ChangeParticle())
 			.build();
-	CommandSpec deleteParticles = CommandSpec.builder()
-			.description(Text.of("change particle type with command"))
-			.permission("pp.admin")
-			.executor(new Commands.deleteParticle())
-			.build();
 	CommandSpec makeParticle = CommandSpec.builder()
 			.description(Text.of("Toggle main command"))
 			.permission("pp.admin")
@@ -114,12 +109,25 @@ public class DarwinParticlesMain {
 			.permission("pp.admin")
 			.executor(new Commands.getParticlesInChunk())
 			.build();
+	CommandSpec teleportToParticle = CommandSpec.builder()
+			.description(Text.of("Toggle main command"))
+			.permission("pp.admin")
+			.arguments(GenericArguments.doubleNum(Text.of("x")), GenericArguments.doubleNum(Text.of("y")), GenericArguments.doubleNum(Text.of("z")) )
+			.executor(new Commands.teleportToParticle())
+			.build();
+	CommandSpec deleteParticles = CommandSpec.builder()
+			.description(Text.of("Toggle main command"))
+			.permission("pp.admin")
+			.arguments(GenericArguments.doubleNum(Text.of("x")), GenericArguments.doubleNum(Text.of("y")), GenericArguments.doubleNum(Text.of("z")) )
+			.executor(new Commands.deleteParticle())
+			.build();
 	CommandSpec makeTest = CommandSpec.builder()
 			.description(Text.of("Toggle main command"))
 			.child(makeParticle, "make")
 			.child(changeParticle, "change")
 			.child(deleteParticles, "delete")
-			.child(getStick, "getStick")
+			.child(getStick, "get")
+			.child(teleportToParticle, "teleport")
 			.child(showParticlesInChunk, "show")
 			.build();
 

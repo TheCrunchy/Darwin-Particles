@@ -2,6 +2,7 @@ package crunch.darwin.particles.commands;
 
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandException;
@@ -19,6 +20,7 @@ import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.text.format.TextStyles;
 import org.spongepowered.api.world.Location;
 
+import com.flowpowered.math.vector.Vector3i;
 import com.intellectualcrafters.plot.object.Plot;
 
 import crunch.darwin.particles.DarwinParticlesMain;
@@ -35,7 +37,7 @@ public class Commands {
 			Long interval;
 			if (args.getOne("particle effect").isPresent()) {
 				if (GetParticleFromString.get(args.getOne("particle effect").get().toString().toLowerCase(), Integer.valueOf(args.getOne("quantity").get().toString())) != null) {
-			type = GetParticleFromString.get(args.getOne("particle effect").get().toString().toLowerCase(), Integer.valueOf(args.getOne("quantity").get().toString()));
+					type = GetParticleFromString.get(args.getOne("particle effect").get().toString().toLowerCase(), Integer.valueOf(args.getOne("quantity").get().toString()));
 				}
 				else {
 					src.sendMessage(Text.of(DarwinParticlesMain.particlesDefault, " That particle does not exist or is not enabled"));
@@ -55,7 +57,7 @@ public class Commands {
 			}
 			if (args.getOne("interval").isPresent()) {
 				interval = (Long) args.getOne("interval").get();
-				}
+			}
 			else {
 				interval = (long) 5;
 			}
@@ -78,7 +80,7 @@ public class Commands {
 		}
 
 	}
-	
+
 	public static class getParticlesInChunk implements CommandExecutor {
 		@Override
 		public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
@@ -91,46 +93,115 @@ public class Commands {
 			plotLoc.setWorld(player.getLocation().getExtent().getName());
 			if (Plot.getPlot(plotLoc) != null) {
 				Plot plot = Plot.getPlot(plotLoc);
-			if (DarwinParticlesMain.allPlotsWithParticles.containsKey(player.getLocation().getExtent().getName() + ":" + plot.getId().toString())) {
-				PlotParticles pp =  DarwinParticlesMain.allPlotsWithParticles.get(player.getLocation().getExtent().getName() + ":" + plot.getId().toString());
-				ArrayList<Text> contents = pp.showParticlesInChunk(loc.getChunkPosition(), player);
-				ArrayList<Text> formattedContents = new ArrayList<>();
-		
-				for (Text toFormat : contents) {
-					Text.Builder sendToPlayer = Text.builder();
-	    			Text.Builder sendParticle = Text.builder();
-	    			sendParticle.append(Text.of(TextColors.LIGHT_PURPLE, toFormat)).build();
-	    			
-	    			sendToPlayer.append(Text.of(sendParticle));
-	    			sendParticle.removeAll();
-	    			sendParticle.append(Text.of(TextColors.AQUA, " [TP]")).onClick(TextActions.runCommand("/pap teleport " + toFormat.getChildren().get(2).toPlainSingle() + " " +  toFormat.getChildren().get(4).toPlainSingle() + " " + toFormat.getChildren().get(6).toPlainSingle())).build();
-	    			sendToPlayer.append(Text.of(sendParticle));
-	    			sendParticle.removeAll();
-	    			sendParticle.append(Text.of(TextColors.DARK_RED, " [Remove]")).onClick(TextActions.runCommand("pap remove " + toFormat.getChildren().get(2).toPlainSingle() + " " +  toFormat.getChildren().get(4).toPlainSingle() + " " + toFormat.getChildren().get(6).toPlainSingle())).build();
-	    			sendToPlayer.append(Text.of(sendParticle));
-	    			sendParticle.removeAll();
-					
-					formattedContents.add(Text.of(sendToPlayer));
+				if (DarwinParticlesMain.allPlotsWithParticles.containsKey(player.getLocation().getExtent().getName() + ":" + plot.getId().toString())) {
+
+					PlotParticles pp =  DarwinParticlesMain.allPlotsWithParticles.get(player.getLocation().getExtent().getName() + ":" + plot.getId().toString());
+					ArrayList<Text> contents = pp.showParticlesInChunk(loc.getChunkPosition(), player);
+					ArrayList<Text> formattedContents = new ArrayList<>();
+					if (!contents.isEmpty()) {
+						for (Text toFormat : contents) {
+							Text.Builder sendToPlayer = Text.builder();
+							Text.Builder sendParticle = Text.builder();
+							sendParticle.append(Text.of(TextColors.LIGHT_PURPLE, toFormat)).build();
+
+							sendToPlayer.append(Text.of(sendParticle));
+							sendParticle.removeAll();
+							sendParticle.append(Text.of(TextColors.AQUA, " [TP]")).onClick(TextActions.runCommand("/pap teleport " + toFormat.getChildren().get(2).toPlainSingle() + " " +  toFormat.getChildren().get(4).toPlainSingle() + " " + toFormat.getChildren().get(6).toPlainSingle())).build();
+							sendToPlayer.append(Text.of(sendParticle));
+							sendParticle.removeAll();
+							sendParticle.append(Text.of(TextColors.DARK_RED, " [Remove]")).onClick(TextActions.runCommand("/pap delete " + toFormat.getChildren().get(2).toPlainSingle() + " " +  toFormat.getChildren().get(4).toPlainSingle() + " " + toFormat.getChildren().get(6).toPlainSingle())).build();
+							sendToPlayer.append(Text.of(sendParticle));
+							sendParticle.removeAll();
+
+							formattedContents.add(Text.of(sendToPlayer));
+						}
+						PaginationList.builder()
+						.contents(formattedContents)
+						.title(Text.of("Particles in chunk - ", loc.getChunkPosition()))
+						// .header(Text.of("Particles in chunk - ", loc.getChunkPosition()))
+						.padding(Text.of("="))
+						.sendTo(player);
+					}
+
+					else {
+						player.sendMessage(Text.of("The chunk you are in does not currently have any particles loaded, wait 5 seconds then try again."));
+					}
 				}
-				PaginationList.builder()
-			    .contents(formattedContents)
-			    .title(Text.of("Particles in chunk - ", loc.getChunkPosition()))
-			   // .header(Text.of("Particles in chunk - ", loc.getChunkPosition()))
-			    .padding(Text.of("="))
-			    .sendTo(player);
+				
+			}
+			return CommandResult.success();
+		}
+	}
+	public static class deleteParticle implements CommandExecutor {
+		@Override
+		public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
+			Double x,y,z;
+			Player player = (Player) src;
+			x = Double.valueOf(args.getOne(Text.of("x")).get().toString());
+			y = Double.valueOf(args.getOne(Text.of("y")).get().toString());
+			z = Double.valueOf(args.getOne(Text.of("z")).get().toString());
+			Location loc = new Location(player.getLocation().getExtent(), x, y, z);
+			com.intellectualcrafters.plot.object.Location plotLoc = new com.intellectualcrafters.plot.object.Location();
+			plotLoc.setX(loc.getBlockX());
+			plotLoc.setY(loc.getBlockY());
+			plotLoc.setZ(loc.getBlockZ());
+			plotLoc.setWorld(player.getLocation().getExtent().getName());
+			if (Plot.getPlot(plotLoc) != null) {
+				Plot plot = Plot.getPlot(plotLoc);
+				if (plot.isAdded(player.getUniqueId()) || player.hasPermission("plots.admin.build.other")) {
+					PlotParticles pp = DarwinParticlesMain.allPlotsWithParticles.get(player.getLocation().getExtent().getName() + ":" + plot.getId().toString());
+
+					HashMap<Vector3i, HashMap<Location, ParticleEffect>> allParticles = pp.getParticles();
+					if (allParticles.containsKey(loc.getChunkPosition()) && allParticles.get(loc.getChunkPosition()).containsKey(loc)) { 
+						pp.removeFromMap(loc.getChunkPosition(), loc);
+						player.sendMessage(Text.of(DarwinParticlesMain.particlesDefault, "Removing particle."));
+						DarwinParticlesMain.allPlotsWithParticles.put(player.getLocation().getExtent().getName() + ":" + plot.getId().toString(), pp);
+						//also do database stuff
+					}
+					else {
+						player.sendMessage(Text.of(DarwinParticlesMain.particlesDefault, "This particle does not exist in this plot."));
+						return CommandResult.success();
+					}
+
 				}
+				else {
+					player.sendMessage(Text.of(DarwinParticlesMain.particlesDefault, "You must be trusted or added to remove particles."));
+					return CommandResult.success();
+				}
+			}
 			else {
-				player.sendMessage(Text.of("The chunk you are in does not currently have any particles loaded, wait 5 seconds then try again."));
-				}
+				player.sendMessage(Text.of(DarwinParticlesMain.particlesDefault, "You must be in the plot to delete particles."));
+				return CommandResult.success();
 			}
 			return CommandResult.success();
 		}
 
 	}
-	public static class deleteParticle implements CommandExecutor {
+
+	public static class teleportToParticle implements CommandExecutor {
 		@Override
 		public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
-			DarwinParticlesMain.allPlotsWithParticles.clear();
+			Double x,y,z;
+			Player player = (Player) src;
+			x = Double.valueOf(args.getOne(Text.of("x")).get().toString());
+			y = Double.valueOf(args.getOne(Text.of("y")).get().toString());
+			z = Double.valueOf(args.getOne(Text.of("z")).get().toString());
+			Location loc = new Location(player.getLocation().getExtent(), x, y, z);
+			com.intellectualcrafters.plot.object.Location plotLoc = new com.intellectualcrafters.plot.object.Location();
+			plotLoc.setX(loc.getBlockX());
+			plotLoc.setY(loc.getBlockY());
+			plotLoc.setZ(loc.getBlockZ());
+			plotLoc.setWorld(player.getLocation().getExtent().getName());
+			if (Plot.getPlot(plotLoc) != null) {
+				Plot plot = Plot.getPlot(plotLoc);
+				if (plot.isAdded(player.getUniqueId()) || player.hasPermission("plots.admin.build.other")) {
+					player.setLocation(loc);
+				}
+			}
+			else {
+				player.sendMessage(Text.of(DarwinParticlesMain.particlesDefault, "You must be in the plot to teleport to particles."));
+				return CommandResult.success();
+			}
 			return CommandResult.success();
 		}
 

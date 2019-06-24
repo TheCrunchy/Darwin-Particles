@@ -106,7 +106,7 @@ public class GetParticleFromString {
 		  case "explosion":
 			  effect = ParticleEffect.builder()
 			  .type(ParticleTypes.EXPLOSION)
-						.quantity(quantity)
+						.quantity(1)
 						.build();
 			    break;
 		  case "falling_dust":
