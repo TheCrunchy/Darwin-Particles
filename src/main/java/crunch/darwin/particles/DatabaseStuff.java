@@ -23,19 +23,19 @@ import com.intellectualcrafters.plot.object.Plot;
 
 public class DatabaseStuff {
 	private Path root;
-	 
-    private SqlService sql;
-    DatabaseStuff(SqlService sqlP) throws SQLException{
-    	sql = sqlP;
-    	this.root =  RootSingleton.getInstance().getRoot();
-    	create();
-    }
+
+	private SqlService sql;
+	DatabaseStuff(SqlService sqlP) throws SQLException{
+		sql = sqlP;
+		this.root =  RootSingleton.getInstance().getRoot();
+		create();
+	}
 	public DataSource getDataSource(String jdbcUrl) throws SQLException {
-        if (sql == null) {
-            sql = Sponge.getServiceManager().provide(SqlService.class).get();
-        }
-        return sql.getDataSource(jdbcUrl);
-    }
+		if (sql == null) {
+			sql = Sponge.getServiceManager().provide(SqlService.class).get();
+		}
+		return sql.getDataSource(jdbcUrl);
+	}
 	public void loadParticleFromDB(String worldName, String plotID) throws SQLException {
 		String tableName;
 		if (worldName.toLowerCase().contains("plot") || worldName.toLowerCase().contains("contest")) {
@@ -93,22 +93,32 @@ public class DatabaseStuff {
 		}
 	}
 
-    public void create() throws SQLException{
-    	
-        String uri = "jdbc:sqlite:" + root + "/ParticleStorage.db";
-        ArrayList <String> queries = new ArrayList<>();
-        //i know i should use a prepared statement but im lazy
-        queries.add("CREATE TABLE IF NOT EXISTS PrivateWorlds (`ID` INTEGER, `WorldName` TEXT, `PlotID` TEXT, `ChunkID` TEXT, `Location` TEXT , `ParticleEffect` TEXT, `Quantity` INTEGER,`Interval` NUMERIC,PRIMARY KEY(`ID`))");
-        queries.add("CREATE TABLE IF NOT EXISTS Plots (`ID` INTEGER, `WorldName` TEXT, `PlotID` TEXT, `ChunkID` TEXT, `Location` TEXT , `ParticleEffect` TEXT, `Quantity` INTEGER,`Interval` NUMERIC,PRIMARY KEY(`ID`))");
-        File file = new File(root + "/ParticleStorage.db");
-        if (!file.exists()) {
-        	try {
+	public void removeFromDB(String tableName, String worldName, String plotID, String location) throws SQLException {
+		String uri = "jdbc:sqlite:" + root + "/ParticleStorage.db";
+		String query = "DELETE from " + tableName + " where (WorldName = '" + worldName + "' AND PlotID = '" + plotID + "' AND Location = '" + location + "')";
+		try (Connection conn2 = getDataSource(uri).getConnection()) {
+			PreparedStatement stmt = conn2.prepareStatement(query); {
+				stmt.executeUpdate(); {
+				}
+			}	
+		}
+	}
+	public void create() throws SQLException{
+
+		String uri = "jdbc:sqlite:" + root + "/ParticleStorage.db";
+		ArrayList <String> queries = new ArrayList<>();
+		//i know i should use a prepared statement but im lazy
+		queries.add("CREATE TABLE IF NOT EXISTS PrivateWorlds (`ID` INTEGER, `WorldName` TEXT, `PlotID` TEXT, `ChunkID` TEXT, `Location` TEXT , `ParticleEffect` TEXT, `Quantity` INTEGER,`Interval` NUMERIC,PRIMARY KEY(`ID`))");
+		queries.add("CREATE TABLE IF NOT EXISTS Plots (`ID` INTEGER, `WorldName` TEXT, `PlotID` TEXT, `ChunkID` TEXT, `Location` TEXT , `ParticleEffect` TEXT, `Quantity` INTEGER,`Interval` NUMERIC,PRIMARY KEY(`ID`))");
+		File file = new File(root + "/ParticleStorage.db");
+		if (!file.exists()) {
+			try {
 				file.createNewFile();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-            Connection conn = getDataSource(uri).getConnection();
+			Connection conn = getDataSource(uri).getConnection();
 			Statement statement = conn.createStatement();
 
 			for (String query : queries) {
@@ -117,7 +127,7 @@ public class DatabaseStuff {
 			statement.executeBatch();
 			statement.close();
 			conn.close();
-			}
-        
-    }
+		}
+
+	}
 }

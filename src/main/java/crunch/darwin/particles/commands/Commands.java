@@ -1,6 +1,7 @@
 package crunch.darwin.particles.commands;
 
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -141,10 +142,11 @@ public class Commands {
 			y = Double.valueOf(args.getOne(Text.of("y")).get().toString());
 			z = Double.valueOf(args.getOne(Text.of("z")).get().toString());
 			Location loc = new Location(player.getLocation().getExtent(), x, y, z);
+			Location playerLoc = player.getLocation();
 			com.intellectualcrafters.plot.object.Location plotLoc = new com.intellectualcrafters.plot.object.Location();
-			plotLoc.setX(loc.getBlockX());
-			plotLoc.setY(loc.getBlockY());
-			plotLoc.setZ(loc.getBlockZ());
+			plotLoc.setX(playerLoc.getBlockX());
+			plotLoc.setY(playerLoc.getBlockY());
+			plotLoc.setZ(playerLoc.getBlockZ());
 			plotLoc.setWorld(player.getLocation().getExtent().getName());
 			if (Plot.getPlot(plotLoc) != null) {
 				Plot plot = Plot.getPlot(plotLoc);
@@ -156,6 +158,20 @@ public class Commands {
 						pp.removeFromMap(loc.getChunkPosition(), loc);
 						player.sendMessage(Text.of(DarwinParticlesMain.particlesDefault, "Removing particle."));
 						DarwinParticlesMain.allPlotsWithParticles.put(player.getLocation().getExtent().getName() + ":" + plot.getId().toString(), pp);
+						String tableName;
+						if (player.getLocation().getExtent().getName().toLowerCase().contains("plot") || player.getLocation().getExtent().getName().toLowerCase().contains("contest")) {
+							tableName = "Plots";
+						}
+						else {
+							tableName = "PrivateWorlds";
+						}
+						try {
+							System.out.println(tableName  + " " + player.getLocation().getExtent().getName() + " " + plot.getId().toString()  + " " +(loc.getBlockX() + "," + loc.getBlockY()  + "," + loc.getBlockZ()).toString());
+							DarwinParticlesMain.db.removeFromDB(tableName, player.getLocation().getExtent().getName(), plot.getId().toString(), (loc.getX() + "," + loc.getY()  + "," + loc.getZ()).toString());
+						} catch (SQLException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 						//also do database stuff
 					}
 					else {
