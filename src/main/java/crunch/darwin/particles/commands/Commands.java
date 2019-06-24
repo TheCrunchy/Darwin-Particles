@@ -14,6 +14,9 @@ import org.spongepowered.api.effect.particle.ParticleTypes;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.service.pagination.PaginationList;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.action.TextActions;
+import org.spongepowered.api.text.format.TextColors;
+import org.spongepowered.api.text.format.TextStyles;
 import org.spongepowered.api.world.Location;
 
 import com.intellectualcrafters.plot.object.Plot;
@@ -91,15 +94,34 @@ public class Commands {
 			if (DarwinParticlesMain.allPlotsWithParticles.containsKey(player.getLocation().getExtent().getName() + ":" + plot.getId().toString())) {
 				PlotParticles pp =  DarwinParticlesMain.allPlotsWithParticles.get(player.getLocation().getExtent().getName() + ":" + plot.getId().toString());
 				ArrayList<Text> contents = pp.showParticlesInChunk(loc.getChunkPosition(), player);
+				ArrayList<Text> formattedContents = new ArrayList<>();
+		
+				for (Text toFormat : contents) {
+					Text.Builder sendToPlayer = Text.builder();
+	    			Text.Builder sendParticle = Text.builder();
+	    			sendParticle.append(Text.of(TextColors.LIGHT_PURPLE, toFormat)).build();
+	    			
+	    			sendToPlayer.append(Text.of(sendParticle));
+	    			sendParticle.removeAll();
+	    			sendParticle.append(Text.of(TextColors.AQUA, " [TP]")).onClick(TextActions.runCommand("/pap teleport " + toFormat.getChildren().get(2).toPlainSingle() + " " +  toFormat.getChildren().get(4).toPlainSingle() + " " + toFormat.getChildren().get(6).toPlainSingle())).build();
+	    			sendToPlayer.append(Text.of(sendParticle));
+	    			sendParticle.removeAll();
+	    			sendParticle.append(Text.of(TextColors.DARK_RED, " [Remove]")).onClick(TextActions.runCommand("pap remove " + toFormat.getChildren().get(2).toPlainSingle() + " " +  toFormat.getChildren().get(4).toPlainSingle() + " " + toFormat.getChildren().get(6).toPlainSingle())).build();
+	    			sendToPlayer.append(Text.of(sendParticle));
+	    			sendParticle.removeAll();
+					
+					formattedContents.add(Text.of(sendToPlayer));
+				}
 				PaginationList.builder()
-			    .contents(contents)
-			    .title(Text.of("Particles in chunk - ", loc))
+			    .contents(formattedContents)
+			    .title(Text.of("Particles in chunk - ", loc.getChunkPosition()))
+			   // .header(Text.of("Particles in chunk - ", loc.getChunkPosition()))
 			    .padding(Text.of("="))
 			    .sendTo(player);
 				}
 			else {
 				player.sendMessage(Text.of("The chunk you are in does not currently have any particles loaded, wait 5 seconds then try again."));
-			}
+				}
 			}
 			return CommandResult.success();
 		}

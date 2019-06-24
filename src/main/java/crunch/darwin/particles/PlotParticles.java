@@ -56,7 +56,7 @@ public class PlotParticles {
 	public ArrayList<Text> showParticlesInChunk(Vector3i loc, Player player) {
 		ArrayList<Text> contents = new ArrayList<>();
 		for (Entry<Location, ParticleEffect> particleLoc : chunksWithParticles.get(loc).entrySet()) {
-			contents.add(Text.of(particleLoc.getValue().getType().getName(), " ", particleLoc.getKey().getX(), " ", particleLoc.getKey().getY(), " ", particleLoc.getKey().getZ()));
+			contents.add(Text.of(particleLoc.getValue().getType().getName(), " = ", particleLoc.getKey().getX(), " ", particleLoc.getKey().getY(), " ", particleLoc.getKey().getZ()));
 		}
 		return contents;
 	}
