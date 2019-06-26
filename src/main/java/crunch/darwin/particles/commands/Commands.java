@@ -104,17 +104,17 @@ public class Commands {
 						for (Text toFormat : contents) {
 							Text.Builder sendToPlayer = Text.builder();
 							Text.Builder sendParticle = Text.builder();
-							sendParticle.append(Text.of(TextColors.LIGHT_PURPLE, toFormat)).build();
-
-							sendToPlayer.append(Text.of(sendParticle));
-							sendParticle.removeAll();
 							sendParticle.append(Text.of(TextColors.AQUA, " [TP]")).onClick(TextActions.runCommand("/pap teleport " + toFormat.getChildren().get(2).toPlainSingle() + " " +  toFormat.getChildren().get(4).toPlainSingle() + " " + toFormat.getChildren().get(6).toPlainSingle())).build();
 							sendToPlayer.append(Text.of(sendParticle));
 							sendParticle.removeAll();
-							sendParticle.append(Text.of(TextColors.DARK_RED, " [Remove]")).onClick(TextActions.runCommand("/pap delete " + toFormat.getChildren().get(2).toPlainSingle() + " " +  toFormat.getChildren().get(4).toPlainSingle() + " " + toFormat.getChildren().get(6).toPlainSingle())).build();
+							sendParticle.append(Text.of(TextColors.DARK_RED, " [Remove] ")).onClick(TextActions.runCommand("/pap delete " + toFormat.getChildren().get(2).toPlainSingle() + " " +  toFormat.getChildren().get(4).toPlainSingle() + " " + toFormat.getChildren().get(6).toPlainSingle())).build();
 							sendToPlayer.append(Text.of(sendParticle));
 							sendParticle.removeAll();
 
+							sendParticle.append(Text.of(TextColors.LIGHT_PURPLE, toFormat.getChildren().get(0).toPlainSingle())).build();
+
+							sendToPlayer.append(Text.of(sendParticle));
+	
 							formattedContents.add(Text.of(sendToPlayer));
 						}
 						PaginationList.builder()
