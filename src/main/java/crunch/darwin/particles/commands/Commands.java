@@ -99,7 +99,8 @@ public class Commands {
 					PlotParticles pp =  DarwinParticlesMain.allPlotsWithParticles.get(player.getLocation().getExtent().getName() + ":" + plot.getId().toString());
 					ArrayList<Text> contents = pp.showParticlesInChunk(loc.getChunkPosition(), player);
 					ArrayList<Text> formattedContents = new ArrayList<>();
-					if (!contents.isEmpty()) {
+					
+					if (!contents.isEmpty() && contents != null) {
 						for (Text toFormat : contents) {
 							Text.Builder sendToPlayer = Text.builder();
 							Text.Builder sendParticle = Text.builder();
@@ -123,12 +124,13 @@ public class Commands {
 						.padding(Text.of("="))
 						.sendTo(player);
 					}
-
 					else {
 						player.sendMessage(Text.of("The chunk you are in does not currently have any particles loaded, wait 5 seconds then try again."));
 					}
 				}
-				
+				else {
+					player.sendMessage(Text.of("The chunk you are in does not currently have any particles loaded, wait 5 seconds then try again."));
+				}
 			}
 			return CommandResult.success();
 		}

@@ -52,11 +52,13 @@ public class PlotParticles {
 		chunksWithParticles.get(chunk).remove(loc);
 		//also do database code
 	}
-	
+
 	public ArrayList<Text> showParticlesInChunk(Vector3i loc, Player player) {
 		ArrayList<Text> contents = new ArrayList<>();
-		for (Entry<Location, ParticleEffect> particleLoc : chunksWithParticles.get(loc).entrySet()) {
-			contents.add(Text.of(particleLoc.getValue().getType().getName(), " = ", particleLoc.getKey().getX(), " ", particleLoc.getKey().getY(), " ", particleLoc.getKey().getZ()));
+		if (chunksWithParticles.containsKey(loc)) {
+			for (Entry<Location, ParticleEffect> particleLoc : chunksWithParticles.get(loc).entrySet()) {
+				contents.add(Text.of(particleLoc.getValue().getType().getName(), " = ", particleLoc.getKey().getX(), " ", particleLoc.getKey().getY(), " ", particleLoc.getKey().getZ()));
+			}
 		}
 		return contents;
 	}
@@ -104,11 +106,11 @@ public class PlotParticles {
 				if (cooldowns.containsKey(vectorLoc)) {
 					if (!((cooldowns.get(vectorLoc) + intervals.get(vectorLoc)) >= (System.currentTimeMillis() / 1000))) {
 						cooldowns.put(vectorLoc, (System.currentTimeMillis() / 1000));
-				for (PlotPlayer p : players) {
-					if (Sponge.getServer().getPlayer(p.getName()).isPresent());
-					Sponge.getServer().getPlayer(p.getName()).get().spawnParticles(loc.getValue(), vectorLoc);
-				}
-			  }
+						for (PlotPlayer p : players) {
+							if (Sponge.getServer().getPlayer(p.getName()).isPresent());
+							Sponge.getServer().getPlayer(p.getName()).get().spawnParticles(loc.getValue(), vectorLoc);
+						}
+					}
 				}
 				else {
 					cooldowns.put(vectorLoc, (System.currentTimeMillis() / 1000));

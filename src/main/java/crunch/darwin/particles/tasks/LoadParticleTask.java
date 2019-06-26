@@ -16,7 +16,7 @@ public class LoadParticleTask implements Runnable {
 					if (Plot.getPlot(plotLoc) != null && Plot.getPlot(plotLoc).getPlayersInPlot().size() > 0) {
 						Plot plot = Plot.getPlot(plotLoc);
 						DarwinParticlesMain.plotsToLoadParticles.remove(i);
-						Sponge.getServer().getConsole().sendMessage(Text.of(DarwinParticlesMain.particlesDefault, " Loading ", plot.getWorldName() + ":" + plot.getId().toString()));
+						
 						try {
 							DarwinParticlesMain.db.loadParticleFromDB(plot.getWorldName(), plot.getId().toString());
 						} catch (SQLException e) {
@@ -32,9 +32,11 @@ public class LoadParticleTask implements Runnable {
 					com.intellectualcrafters.plot.object.Location plotLoc = DarwinParticlesMain.plotsTounLoadParticles.get(i);
 					if (Plot.getPlot(plotLoc) != null && Plot.getPlot(plotLoc).getPlayersInPlot().size() == 0) {
 						Plot plot = Plot.getPlot(plotLoc);
+						if (DarwinParticlesMain.allPlotsWithParticles.containsKey(plot.getWorldName() + ":" + plot.getId().toString())) {
 						DarwinParticlesMain.plotsTounLoadParticles.remove(i);
 						DarwinParticlesMain.allPlotsWithParticles.remove(plot.getWorldName() + ":" + plot.getId().toString());
 						Sponge.getServer().getConsole().sendMessage(Text.of(DarwinParticlesMain.particlesDefault, " Unloading ", plot.getWorldName() + ":" + plot.getId().toString()));
+						}
 					}
 					else {
 						DarwinParticlesMain.plotsTounLoadParticles.remove(i);

@@ -16,6 +16,7 @@ import javax.sql.DataSource;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.effect.particle.ParticleEffect;
 import org.spongepowered.api.service.sql.SqlService;
+import org.spongepowered.api.text.Text;
 import org.spongepowered.api.world.Location;
 
 import com.flowpowered.math.vector.Vector3i;
@@ -49,6 +50,7 @@ public class DatabaseStuff {
 		try (Connection conn2 = getDataSource(uri).getConnection()) {
 			PreparedStatement stmt = conn2.prepareStatement(query); {
 				ResultSet results = stmt.executeQuery(); {
+					String plotid = "";
 					while(results.next()) {
 						ArrayList<Location> locations = new ArrayList<>();
 						ArrayList<Vector3i> chunkLocations = new ArrayList<>();
@@ -69,6 +71,11 @@ public class DatabaseStuff {
 						plotLoc.setWorld(worldName);
 						if (Plot.getPlot(plotLoc) != null) {
 							Plot plot = Plot.getPlot(plotLoc);
+							if (plotid != null && !plotid.equals(plot.getId().toString())) {
+							Sponge.getServer().getConsole().sendMessage(Text.of(DarwinParticlesMain.particlesDefault, " Loading ", plot.getWorldName() + ":" + plot.getId().toString()));
+						
+							}
+							plotid = plot.getId().toString();
 							String[] chunkSplit = results.getString("ChunkID").replace("(", "").replace(")", "").replace("[", "").replace("]", "").replace(" ", "").split(",");
 							chunkLocations.add(new Vector3i(Integer.valueOf(chunkSplit[0]),Integer.valueOf(chunkSplit[1]),Integer.valueOf(chunkSplit[2])));
 							effects.add(GetParticleFromString.get(results.getString("ParticleEffect"), results.getInt("Quantity")));
