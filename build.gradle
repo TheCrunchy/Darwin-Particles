@@ -27,7 +27,7 @@ dependencies {
     compile "org.spongepowered:spongeapi:7.1.0-SNAPSHOT"
     compile "com.plotsquared:plotsquared-api:19.05.15-3293593-765"
     compile 'com.github.rojo8399:PlaceholderAPI:master-SNAPSHOT'
-    compile "com.github.SimonFlash.TeslaPowered:TeslaLibs:v${1.1.6}"
+    compile "com.github.SimonFlash.TeslaPowered:TeslaLibs:1.1.6"
     compile fileTree(dir: 'lib', include: '*.jar')
 	compileOnly ("com.sk89q.worldedit:worldedit-core:6.1.4-SNAPSHOT") {
         transitive = false

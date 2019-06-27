@@ -68,6 +68,8 @@ public class DarwinParticlesMain {
 	public static ArrayList<com.intellectualcrafters.plot.object.Location> plotsTounLoadParticles = new ArrayList<>();
 
 	public static DatabaseStuff db;
+	
+	private HashMap<UUID, Long> playerCooldowns = new HashMap<UUID, Long>();
 
 	@Listener
 	public void onServerFinishLoad(GameStartedServerEvent event) throws SQLException {
@@ -241,6 +243,8 @@ public class DarwinParticlesMain {
 			if (player.getItemInHand(HandTypes.MAIN_HAND).isPresent() && player.getItemInHand(HandTypes.MAIN_HAND).get().equalTo(makePPStick())){		
 				@SuppressWarnings("unchecked")
 				Location loc;
+				if (playerCooldowns.containsKey(player.getUniqueId())) {
+					if (!((playerCooldowns.get(player.getUniqueId()) + 1 ) >= (System.currentTimeMillis() / 1000))) {
 				if (player.getLocation().getExtent() != null && event.getInteractionPoint().isPresent()) {
 					loc = new Location(player.getLocation().getExtent(), event.getInteractionPoint().get());
 				}
@@ -248,7 +252,20 @@ public class DarwinParticlesMain {
 					loc = player.getLocation();
 				}
 				addNewParticle(loc, player);
+				playerCooldowns.put(player.getUniqueId(), (System.currentTimeMillis() / 1000));
+				}
 
+			   }
+				else {
+					if (player.getLocation().getExtent() != null && event.getInteractionPoint().isPresent()) {
+						loc = new Location(player.getLocation().getExtent(), event.getInteractionPoint().get());
+					}
+					else {
+						loc = player.getLocation();
+					}
+					addNewParticle(loc, player);
+					playerCooldowns.put(player.getUniqueId(), (System.currentTimeMillis() / 1000));
+				}
 			}
 		}
 	}
