@@ -76,7 +76,7 @@ public class PlotParticles {
 			chunksWithParticles.put(chunkLocations.get(i), particlesAtLocation);
 		}
 	}
-	public Integer getPlayerLimit(Player player) {
+	public Integer getPlayerChunkLimit(Player player) {
 		int limit = 0;
 		if (player.hasPermission("particles.limit.4")) {
 			limit = 4;
