@@ -81,6 +81,9 @@ public class PlotParticles {
 		if (player.hasPermission("particles.limit.4")) {
 			limit = 4;
 		}
+		if (player.hasPermission("particles.limit.6")) {
+			limit =  6;
+		}
 		if (player.hasPermission("particles.limit.8")) {
 			limit =  8;
 		}

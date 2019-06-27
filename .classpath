@@ -10,5 +10,6 @@
 	<classpathentry kind="con" path="org.eclipse.buildship.core.gradleclasspathcontainer"/>
 	<classpathentry kind="lib" path="C:/Users/Cameron/Documents/Local testing/sponge/spongeapi-7.1.0-20180820.174752-54-shaded.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Cameron/Documents/Local testing/sponge/mods/PlotSquared-Sponge-.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Cameron/Documents/Local testing/TeslaPowered-s7.1-v1.1.6.jar"/>
 	<classpathentry kind="output" path="bin/default"/>
 </classpath>

@@ -4,6 +4,8 @@ package crunch.darwin.particles.commands;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.function.Consumer;
 
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandException;
@@ -11,9 +13,16 @@ import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.spec.CommandExecutor;
+import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.effect.particle.ParticleEffect;
 import org.spongepowered.api.effect.particle.ParticleTypes;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.item.ItemTypes;
+import org.spongepowered.api.item.inventory.InventoryArchetype;
+import org.spongepowered.api.item.inventory.InventoryArchetypes;
+import org.spongepowered.api.item.inventory.ItemStack;
+import org.spongepowered.api.item.inventory.property.InventoryTitle;
+import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.service.pagination.PaginationList;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.action.TextActions;
@@ -23,6 +32,10 @@ import org.spongepowered.api.world.Location;
 
 import com.flowpowered.math.vector.Vector3i;
 import com.intellectualcrafters.plot.object.Plot;
+import com.mcsimonflash.sponge.teslalibs.inventory.Action;
+import com.mcsimonflash.sponge.teslalibs.inventory.Element;
+import com.mcsimonflash.sponge.teslalibs.inventory.Layout;
+import com.mcsimonflash.sponge.teslalibs.inventory.View;
 
 import crunch.darwin.particles.DarwinParticlesMain;
 import crunch.darwin.particles.GetParticleFromString;
@@ -230,6 +243,35 @@ public class Commands {
 			Player player = (Player) src;
 			Location loc = new Location(Sponge.getServer().getWorld(player.getLocation().getExtent().getName()).get(), player.getLocation().getX(),player.getLocation().getY(), player.getLocation().getZ());
 			DarwinParticlesMain.addNewParticle(loc, player);
+			return CommandResult.success();
+		}
+	}
+	public static class openGui implements CommandExecutor {
+		@Override
+		public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
+			Player player = (Player) src;
+			//Location loc = new Location(Sponge.getServer().getWorld(player.getLocation().getExtent().getName()).get(), player.getLocation().getX(),player.getLocation().getY(), player.getLocation().getZ());
+			//DarwinParticlesMain.addNewParticle(loc, player);
+			ItemStack testItem = ItemStack.builder()
+					.itemType(ItemTypes.PAPER).build();
+			testItem.offer(Keys.DISPLAY_NAME, Text.of(TextColors.YELLOW, "LARGE_SMOKE"));
+			//Consumer<Action.Click> action = a -> action.getPlayer().sendMessage(Text.of("Elements are awesome!")););
+			
+//			Element test = Element.of(testItem, a);
+//
+//			Layout layout = Layout.builder()
+//			        .set(stone, 0)
+//			        .set(dirt, 1, 9)
+//			        .set(grass, 2, 10, 18)
+//			        .build();
+//			InventoryArchetype archetype = InventoryArchetypes.DOUBLE_CHEST;
+//			PluginContainer container;
+//		    View view =
+//		            View.builder()
+//		                .archetype(archetype)
+//		                .property(InventoryTitle.of(Text.of(TextColors.AQUA, "Particles by Crunch")))
+//		                .build(Sponge.getPluginManager().getPlugin("darwinparticles").get())
+//		                .define(layout);
 			return CommandResult.success();
 		}
 	}
