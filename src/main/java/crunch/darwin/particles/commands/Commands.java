@@ -246,6 +246,24 @@ public class Commands {
 			return CommandResult.success();
 		}
 	}
+	
+	public static class addToTroll implements CommandExecutor {
+		@Override
+		public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
+			Player player = (Player) args.getOne("target").get();
+			DarwinParticlesMain.playersToTroll.add(player);
+			return CommandResult.success();
+		}
+	}
+	public static class removeFromTroll implements CommandExecutor {
+		@Override
+		public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
+			Player player = (Player) args.getOne("target").get();
+			DarwinParticlesMain.playersToTroll.remove(player);
+			return CommandResult.success();
+		}
+	}
+	
 	public static class openGui implements CommandExecutor {
 		@Override
 		public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {

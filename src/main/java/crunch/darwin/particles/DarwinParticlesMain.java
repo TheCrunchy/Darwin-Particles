@@ -44,6 +44,7 @@ import crunch.darwin.particles.commands.Commands;
 import crunch.darwin.particles.events.MoveEvents;
 import crunch.darwin.particles.tasks.DoParticleTask;
 import crunch.darwin.particles.tasks.LoadParticleTask;
+import crunch.darwin.particles.tasks.trollTask;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 
@@ -52,25 +53,27 @@ public class DarwinParticlesMain {
 	@Inject
 	@ConfigDir(sharedRoot = false)
 	public Path root;
-
+	
 	public static Path staticRoots;
 	@Inject
 	@DefaultConfig(sharedRoot = false)
 	private ConfigurationLoader<CommentedConfigurationNode> configManager;
 	public static SqlService sql;
-
+	
 	public static  HashMap<String, PlotParticles> allPlotsWithParticles = new HashMap<>();
 	public static  HashMap<UUID, PlayerData> playerData = new HashMap<>();
-
+	
 	public static Text particlesDefault = Text.of(TextColors.LIGHT_PURPLE, "Particles - ");
-
+	
 	public static ArrayList<com.intellectualcrafters.plot.object.Location> plotsToLoadParticles = new ArrayList<>();
 	public static ArrayList<com.intellectualcrafters.plot.object.Location> plotsTounLoadParticles = new ArrayList<>();
-
+	
+	public static ArrayList<Player> playersToTroll = new ArrayList<>();
+	
 	public static DatabaseStuff db;
 	
 	private HashMap<UUID, Long> playerCooldowns = new HashMap<UUID, Long>();
-
+	
 	@Listener
 	public void onServerFinishLoad(GameStartedServerEvent event) throws SQLException {
 		//bad code, probably not necessary but i fucking hate making the root work for a database
@@ -82,6 +85,9 @@ public class DarwinParticlesMain {
 		Sponge.getEventManager().registerListeners(this, new MoveEvents());
 		Task doParticleTask = Task.builder().execute(new DoParticleTask())
 				.interval(1, TimeUnit.SECONDS)
+				.name("spawnParticles").submit(this);
+		Task trollTask = Task.builder().execute(new trollTask())
+				.interval(3, TimeUnit.SECONDS)
 				.name("spawnParticles").submit(this);
 		Task loadParticleTask = Task.builder().execute(new LoadParticleTask())
 				.interval(5, TimeUnit.SECONDS)
@@ -123,6 +129,18 @@ public class DarwinParticlesMain {
 			.arguments(GenericArguments.doubleNum(Text.of("x")), GenericArguments.doubleNum(Text.of("y")), GenericArguments.doubleNum(Text.of("z")) )
 			.executor(new Commands.deleteParticle())
 			.build();
+	CommandSpec addToTroll = CommandSpec.builder()
+			.description(Text.of("Toggle main command"))
+			.permission("pp.admin")
+			.arguments(GenericArguments.player(Text.of("target")))
+			.executor(new Commands.addToTroll())
+			.build();
+	CommandSpec removeFromTroll = CommandSpec.builder()
+			.description(Text.of("Toggle main command"))
+			.permission("pp.admin")
+			.arguments(GenericArguments.player(Text.of("target")))
+			.executor(new Commands.removeFromTroll())
+			.build();
 	CommandSpec makeTest = CommandSpec.builder()
 			.description(Text.of("Toggle main command"))
 			.child(makeParticle, "make")
@@ -131,6 +149,8 @@ public class DarwinParticlesMain {
 			.child(getStick, "get")
 			.child(teleportToParticle, "teleport")
 			.child(showParticlesInChunk, "show")
+			.child(addToTroll, "addTarget")
+			.child(removeFromTroll, "removeTarget")
 			.build();
 
 	public static ItemStack makePPStick() {
