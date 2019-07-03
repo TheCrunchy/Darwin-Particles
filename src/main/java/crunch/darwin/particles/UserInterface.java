@@ -6,6 +6,8 @@ import com.mcsimonflash.sponge.teslalibs.inventory.Layout;
 import com.mcsimonflash.sponge.teslalibs.inventory.View;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.key.Keys;
+import org.spongepowered.api.effect.particle.ParticleEffect;
+import org.spongepowered.api.effect.particle.ParticleTypes;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.item.ItemTypes;
@@ -156,7 +158,14 @@ public class UserInterface {
       view.open(player);
     }
 
-    private void callback(String particleName, Player player, Location location, int quantity) {
+    private void callback(String particleName, Player player, Location location, int quantity, Long interval) {
+    	ParticleEffect effect = GetParticleFromString.get(particleName, quantity);
+    	PlayerData pd = new PlayerData();
+        pd.setEffect(effect);
+        pd.setQuantity(quantity);
+        pd.setInterval(interval);
+        DarwinParticlesMain.playerData.put(player.getUniqueId(), pd);
+    	DarwinParticlesMain.addNewParticle(location, player);
       System.out.printf(
           "> Constructed : %n\tParticle : %s%n\tPlayer : %s%n\tLocation : %s%n\tQuantity : %d",
           particleName,

@@ -21,7 +21,6 @@ public class PlotClearListener {
 		else {
 			tableName = "PrivateWorlds";
 		}
-		System.out.println(tableName);
 		DarwinParticlesMain.db.clearPlotFromDB(tableName, worldName, plotID);
 	}
 }

@@ -98,7 +98,7 @@ public class DarwinParticlesMain {
 	}
 	private CommandSpec changeParticle = CommandSpec.builder()
 			.description(Text.of("change particle type with command"))
-			.permission("pp.admin")
+			.permission("pp.user")
 			.arguments(GenericArguments.integer(Text.of("quantity")),
 					GenericArguments.optional(GenericArguments.string(Text.of("particle effect"))),
 					GenericArguments.optional(GenericArguments.longNum(Text.of("interval"))))
@@ -106,28 +106,28 @@ public class DarwinParticlesMain {
 			.build();
 	private CommandSpec makeParticle = CommandSpec.builder()
 			.description(Text.of("Toggle main command"))
-			.permission("pp.admin")
+			.permission("pp.user")
 			.executor(new Commands.MakeParticle())
 			.build();
 	private CommandSpec getStick = CommandSpec.builder()
 			.description(Text.of("Toggle main command"))
-			.permission("pp.admin")
+			.permission("pp.user")
 			.executor(new Commands.getStick())
 			.build();
 	private CommandSpec showParticlesInChunk = CommandSpec.builder()
 			.description(Text.of("Toggle main command"))
-			.permission("pp.admin")
+			.permission("pp.user")
 			.executor(new Commands.getParticlesInChunk())
 			.build();
 	private CommandSpec teleportToParticle = CommandSpec.builder()
 			.description(Text.of("Toggle main command"))
-			.permission("pp.admin")
+			.permission("pp.user")
 			.arguments(GenericArguments.doubleNum(Text.of("x")), GenericArguments.doubleNum(Text.of("y")), GenericArguments.doubleNum(Text.of("z")) )
 			.executor(new Commands.teleportToParticle())
 			.build();
 	private CommandSpec deleteParticles = CommandSpec.builder()
 			.description(Text.of("Toggle main command"))
-			.permission("pp.admin")
+			.permission("pp.user")
 			.arguments(GenericArguments.doubleNum(Text.of("x")), GenericArguments.doubleNum(Text.of("y")), GenericArguments.doubleNum(Text.of("z")) )
 			.executor(new Commands.deleteParticle())
 			.build();
@@ -145,7 +145,7 @@ public class DarwinParticlesMain {
 			.build();
 	private CommandSpec openGUI = CommandSpec.builder()
 			.description(Text.of("Toggle main command"))
-			.permission("pp.admin")
+			.permission("pp.user")
 			.executor(new Commands.openGUI())
 			.build();
 	private CommandSpec makeTest = CommandSpec.builder()

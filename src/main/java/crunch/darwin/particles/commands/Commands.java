@@ -63,14 +63,7 @@ public class Commands {
       } else {
         if (DarwinParticlesMain.playerData.containsKey(player.getUniqueId())) {
           type =
-              GetParticleFromString.get(
-                  DarwinParticlesMain.playerData
-                      .get(player.getUniqueId())
-                      .getEffect()
-                      .getType()
-                      .getName()
-                      .toLowerCase(),
-                  Integer.valueOf(args.getOne("quantity").get().toString()));
+              GetParticleFromString.get(DarwinParticlesMain.playerData.get(player.getUniqueId()).getEffect().getType().getName().toLowerCase(),Integer.valueOf(args.getOne("quantity").get().toString()));
         } else {
           type =
               ParticleEffect.builder()
