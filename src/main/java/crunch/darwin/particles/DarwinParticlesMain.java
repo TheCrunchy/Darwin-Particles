@@ -43,6 +43,7 @@ import com.intellectualcrafters.plot.object.Plot;
 import crunch.darwin.particles.commands.Commands;
 import crunch.darwin.particles.events.MoveEvents;
 import crunch.darwin.particles.events.PlotClearListener;
+import crunch.darwin.particles.tasks.ClearOfflines;
 import crunch.darwin.particles.tasks.DoParticleTask;
 import crunch.darwin.particles.tasks.LoadParticleTask;
 import crunch.darwin.particles.tasks.trollTask;
@@ -95,6 +96,10 @@ public class DarwinParticlesMain {
 				.interval(5, TimeUnit.SECONDS)
 				.async()
 				.name("loadParticles").submit(this);
+		Task.builder().execute(new ClearOfflines())
+	            .interval(5, TimeUnit.MINUTES)
+	            .async()
+	            .name("Remove offline players from a map").submit(this);
 	}
 	private CommandSpec changeParticle = CommandSpec.builder()
 			.description(Text.of("change particle type with command"))
