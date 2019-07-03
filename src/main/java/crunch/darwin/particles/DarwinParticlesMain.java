@@ -85,18 +85,18 @@ public class DarwinParticlesMain {
 		Sponge.getEventManager().registerListeners(this, new doRightClick());
 		Sponge.getEventManager().registerListeners(this, new MoveEvents());
 		Sponge.getEventManager().registerListeners(this, new PlotClearListener());
-		Task doParticleTask = Task.builder().execute(new DoParticleTask())
+		Task.builder().execute(new DoParticleTask())
 				.interval(1, TimeUnit.SECONDS)
 				.name("spawnParticles").submit(this);
-		Task trollTask = Task.builder().execute(new trollTask())
+		Task.builder().execute(new trollTask())
 				.interval(3, TimeUnit.SECONDS)
 				.name("spawnParticles").submit(this);
-		Task loadParticleTask = Task.builder().execute(new LoadParticleTask())
+		Task.builder().execute(new LoadParticleTask())
 				.interval(5, TimeUnit.SECONDS)
 				.async()
 				.name("loadParticles").submit(this);
 	}
-	CommandSpec changeParticle = CommandSpec.builder()
+	private CommandSpec changeParticle = CommandSpec.builder()
 			.description(Text.of("change particle type with command"))
 			.permission("pp.admin")
 			.arguments(GenericArguments.integer(Text.of("quantity")),
@@ -104,46 +104,51 @@ public class DarwinParticlesMain {
 					GenericArguments.optional(GenericArguments.longNum(Text.of("interval"))))
 			.executor(new Commands.ChangeParticle())
 			.build();
-	CommandSpec makeParticle = CommandSpec.builder()
+	private CommandSpec makeParticle = CommandSpec.builder()
 			.description(Text.of("Toggle main command"))
 			.permission("pp.admin")
 			.executor(new Commands.MakeParticle())
 			.build();
-	CommandSpec getStick = CommandSpec.builder()
+	private CommandSpec getStick = CommandSpec.builder()
 			.description(Text.of("Toggle main command"))
 			.permission("pp.admin")
 			.executor(new Commands.getStick())
 			.build();
-	CommandSpec showParticlesInChunk = CommandSpec.builder()
+	private CommandSpec showParticlesInChunk = CommandSpec.builder()
 			.description(Text.of("Toggle main command"))
 			.permission("pp.admin")
 			.executor(new Commands.getParticlesInChunk())
 			.build();
-	CommandSpec teleportToParticle = CommandSpec.builder()
+	private CommandSpec teleportToParticle = CommandSpec.builder()
 			.description(Text.of("Toggle main command"))
 			.permission("pp.admin")
 			.arguments(GenericArguments.doubleNum(Text.of("x")), GenericArguments.doubleNum(Text.of("y")), GenericArguments.doubleNum(Text.of("z")) )
 			.executor(new Commands.teleportToParticle())
 			.build();
-	CommandSpec deleteParticles = CommandSpec.builder()
+	private CommandSpec deleteParticles = CommandSpec.builder()
 			.description(Text.of("Toggle main command"))
 			.permission("pp.admin")
 			.arguments(GenericArguments.doubleNum(Text.of("x")), GenericArguments.doubleNum(Text.of("y")), GenericArguments.doubleNum(Text.of("z")) )
 			.executor(new Commands.deleteParticle())
 			.build();
-	CommandSpec addToTroll = CommandSpec.builder()
+	private CommandSpec addToTroll = CommandSpec.builder()
 			.description(Text.of("Toggle main command"))
 			.permission("pp.admin")
 			.arguments(GenericArguments.player(Text.of("target")))
 			.executor(new Commands.addToTroll())
 			.build();
-	CommandSpec removeFromTroll = CommandSpec.builder()
+	private CommandSpec removeFromTroll = CommandSpec.builder()
 			.description(Text.of("Toggle main command"))
 			.permission("pp.admin")
 			.arguments(GenericArguments.player(Text.of("target")))
 			.executor(new Commands.removeFromTroll())
 			.build();
-	CommandSpec makeTest = CommandSpec.builder()
+	private CommandSpec openGUI = CommandSpec.builder()
+			.description(Text.of("Toggle main command"))
+			.permission("pp.admin")
+			.executor(new Commands.openGUI())
+			.build();
+	private CommandSpec makeTest = CommandSpec.builder()
 			.description(Text.of("Toggle main command"))
 			.child(makeParticle, "make")
 			.child(changeParticle, "change")
@@ -153,6 +158,7 @@ public class DarwinParticlesMain {
 			.child(showParticlesInChunk, "show")
 			.child(addToTroll, "addTarget")
 			.child(removeFromTroll, "removeTarget")
+			.child(openGUI, "gui")
 			.build();
 
 	public static ItemStack makePPStick() {

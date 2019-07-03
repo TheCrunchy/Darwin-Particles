@@ -157,7 +157,7 @@ public class DatabaseStuff {
 				}
 
 				ArrayList<Text> contents = plotParticle.showParticlesInChunk(loc.getChunkPosition(), player);
-				int max = plotParticle.getPlayerChunkLimit(player);
+				int max = PlotParticles.getPlayerChunkLimit(player);
 				if (contents.size() >= max) {
 					player.sendMessage(Text.of(DarwinParticlesMain.particlesDefault, " You have reached the limit of ", max ," particles for this chunk"));
 					return;

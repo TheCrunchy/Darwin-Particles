@@ -9,3 +9,7 @@ bin/main/crunch/darwin/particles/commands/Commands$ChangeParticle.class
 bin/main/crunch/darwin/particles/commands/Commands$ChangeParticle.class
 bin/main/crunch/darwin/particles/commands/Commands$deleteParticle.class
 bin/main/crunch/darwin/particles/commands/Commands$getParticlesInChunk.class
+
+# Ignore IDEA
+.idea/
+*.iml
