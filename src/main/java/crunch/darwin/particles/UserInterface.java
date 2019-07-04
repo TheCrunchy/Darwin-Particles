@@ -193,7 +193,7 @@ public class UserInterface {
               .property(InventoryTitle.of(Text.of(TextColors.AQUA, "Particles")))
               .build(container)
               .define(layout);
-      view.open(player);
+     view.open(player); 
     }
 
     private void callback(
@@ -205,7 +205,7 @@ public class UserInterface {
       pd.setInterval(interval);
       DarwinParticlesMain.playerData.put(player.getUniqueId(), pd);
       DarwinParticlesMain.addNewParticle(location, player);
-
+      player.closeInventory();
       System.out.printf(
           "> Constructed : %n\tParticle : %s%n\tPlayer : %s%n\tLocation : %s%n\tQuantity : %d%n\tInterval : %d seconds",
           particleName,
