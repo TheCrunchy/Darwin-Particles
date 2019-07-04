@@ -100,7 +100,7 @@ public class PlotParticles {
 	}
 	
 	
-	public Integer getPlayerQuantityLimit(Player player) {
+	public static Integer getPlayerQuantityLimit(Player player) {
 		int limit = 0;
 		if (player.hasPermission("particles.max.25")) {
 			limit = 25;

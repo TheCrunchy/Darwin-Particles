@@ -115,7 +115,7 @@ public class UserInterface {
       lore.add(2, Text.of(TextColors.AQUA, "Interval : " + currentInterval + " seconds"));
       offerStack.offer(Keys.ITEM_LORE, lore);
 
-      maxQuantity = PlotParticles.getPlayerChunkLimit(player);
+      maxQuantity = PlotParticles.getPlayerQuantityLimit(player);
 
       addIntervalButton(-10, 1);
       addIntervalButton(-5, 2);
@@ -200,7 +200,12 @@ public class UserInterface {
         String particleName, Player player, Location location, int quantity, Long interval) {
       ParticleEffect effect = GetParticleFromString.get(particleName, quantity);
       PlayerData pd = new PlayerData();
+      if (PlotParticles.getPlayerQuantityLimit(player) >= quantity) {
+    	  player.sendMessage(Text.of(DarwinParticlesMain.particlesDefault, "That quantity is above your limit of ", PlotParticles.getPlayerQuantityLimit(player)));
+    	  return;
+      }
       pd.setEffect(effect);
+      
       pd.setQuantity(quantity);
       pd.setInterval(interval);
       DarwinParticlesMain.playerData.put(player.getUniqueId(), pd);
