@@ -89,6 +89,10 @@ public class UserInterface {
 
     private int maxQuantity;
     private int currentQuantity = 1;
+
+    private long minInterval = 1;
+    private long currentInterval = 1;
+
     private Layout.Builder builder = new Layout.Builder().dimension(InventoryDimension.of(9, 3));
     private ItemStack offerStack;
     private List<Text> lore = new ArrayList<>();
@@ -106,21 +110,37 @@ public class UserInterface {
               .build(); // Prevent copying keys from previous screens
       offerStack.offer(
           Keys.DISPLAY_NAME, Text.of(TextColors.DARK_AQUA, "Click to summon particles"));
-      lore.add(Text.of(TextColors.AQUA, "Particle : " + particleDisplayName));
-      lore.add(Text.of(TextColors.AQUA, "Quantity : " + currentQuantity));
+      lore.add(0, Text.of(TextColors.AQUA, "Particle : " + particleDisplayName));
+      lore.add(1, Text.of(TextColors.AQUA, "Quantity : " + currentQuantity));
+      lore.add(2, Text.of(TextColors.AQUA, "Interval : " + currentInterval + " seconds"));
       offerStack.offer(Keys.ITEM_LORE, lore);
 
       maxQuantity = PlotParticles.getPlayerChunkLimit(player);
 
-      addIncrementButton(-1, 10);
-      addIncrementButton(-5, 11);
-      addIncrementButton(-10, 12);
+      addIntervalButton(-10, 1);
+      addIntervalButton(-5, 2);
+      addIntervalButton(-1, 3);
 
-      addIncrementButton(10, 14);
+      addIntervalButton(1, 5);
+      addIntervalButton(5, 6);
+      addIntervalButton(10, 7);
+
+      addIncrementButton(-10, 10);
+      addIncrementButton(-5, 11);
+      addIncrementButton(-1, 12);
+
+      addIncrementButton(1, 14);
       addIncrementButton(5, 15);
-      addIncrementButton(1, 16);
+      addIncrementButton(10, 16);
 
       updateView();
+    }
+
+    private void addIntervalButton(int increment, int index) {
+      ItemStack itemStack = ItemStack.builder().itemType(ItemTypes.BRICK).build();
+      itemStack.offer(
+          Keys.DISPLAY_NAME, Text.of(TextColors.AQUA, "Update interval by : " + increment));
+      builder.set(Element.of(itemStack, a -> countInterval(increment)), index);
     }
 
     private void addIncrementButton(int increment, int index) {
@@ -136,7 +156,19 @@ public class UserInterface {
               ? currentQuantity + increment
               : currentQuantity;
       lore.remove(1);
-      lore.add(Text.of(TextColors.AQUA, "Quantity : " + currentQuantity));
+      lore.add(1, Text.of(TextColors.AQUA, "Quantity : " + currentQuantity));
+      offerStack.remove(Keys.ITEM_LORE);
+      offerStack.offer(Keys.ITEM_LORE, lore);
+      updateView();
+    }
+
+    private void countInterval(int increment) {
+      currentInterval =
+          currentInterval + increment >= minInterval
+              ? currentInterval + increment
+              : currentInterval;
+      lore.remove(2);
+      lore.add(2, Text.of(TextColors.AQUA, "Interval : " + currentInterval + " seconds"));
       offerStack.remove(Keys.ITEM_LORE);
       offerStack.offer(Keys.ITEM_LORE, lore);
       updateView();
@@ -144,10 +176,16 @@ public class UserInterface {
 
     private void updateView() {
       builder.set(
-              Element.of(
-                      offerStack,
-                      a -> callback(particleName, player, player.getLocation(), currentQuantity)),
-              22);
+          Element.of(
+              offerStack,
+              a ->
+                  callback(
+                      particleName,
+                      player,
+                      player.getLocation(),
+                      currentQuantity,
+                      currentInterval)),
+          22);
       Layout layout = builder.build();
       View view =
           View.builder()
@@ -158,16 +196,18 @@ public class UserInterface {
       view.open(player);
     }
 
-    private void callback(String particleName, Player player, Location location, int quantity, Long interval) {
-    	ParticleEffect effect = GetParticleFromString.get(particleName, quantity);
-    	PlayerData pd = new PlayerData();
-        pd.setEffect(effect);
-        pd.setQuantity(quantity);
-        pd.setInterval(interval);
-        DarwinParticlesMain.playerData.put(player.getUniqueId(), pd);
-    	DarwinParticlesMain.addNewParticle(location, player);
+    private void callback(
+        String particleName, Player player, Location location, int quantity, Long interval) {
+      ParticleEffect effect = GetParticleFromString.get(particleName, quantity);
+      PlayerData pd = new PlayerData();
+      pd.setEffect(effect);
+      pd.setQuantity(quantity);
+      pd.setInterval(interval);
+      DarwinParticlesMain.playerData.put(player.getUniqueId(), pd);
+      DarwinParticlesMain.addNewParticle(location, player);
+
       System.out.printf(
-          "> Constructed : %n\tParticle : %s%n\tPlayer : %s%n\tLocation : %s%n\tQuantity : %d",
+          "> Constructed : %n\tParticle : %s%n\tPlayer : %s%n\tLocation : %s%n\tQuantity : %d%n\tInterval : %d seconds",
           particleName,
           player.getName(),
           (location.getBlockX()
@@ -177,7 +217,8 @@ public class UserInterface {
               + location.getBlockZ()
               + " in "
               + ((World) location.getExtent()).getName()),
-          quantity);
+          quantity,
+          interval);
     }
   }
 }
