@@ -200,12 +200,7 @@ public class UserInterface {
         String particleName, Player player, Location location, int quantity, Long interval) {
       ParticleEffect effect = GetParticleFromString.get(particleName, quantity);
       PlayerData pd = new PlayerData();
-      if (PlotParticles.getPlayerQuantityLimit(player) >= quantity) {
-    	  player.sendMessage(Text.of(DarwinParticlesMain.particlesDefault, "That quantity is above your limit of ", PlotParticles.getPlayerQuantityLimit(player)));
-    	  return;
-      }
-      pd.setEffect(effect);
-      
+      pd.setEffect(effect);     
       pd.setQuantity(quantity);
       pd.setInterval(interval);
       DarwinParticlesMain.playerData.put(player.getUniqueId(), pd);
